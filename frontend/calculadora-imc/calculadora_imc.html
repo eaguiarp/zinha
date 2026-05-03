@@ -36,6 +36,8 @@ tr.ativo td{background:#e8f0fe;font-weight:bold;color:#1a73e8}
 .footer-note{margin-top:1.5rem;font-size:12px;color:#888;line-height:1.6;text-align:center}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 </style>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
 
 <div class="container">
   <div class="header">
@@ -87,6 +89,10 @@ tr.ativo td{background:#e8f0fe;font-weight:bold;color:#1a73e8}
         <div class="card-label">Faixa saudável</div>
         <div class="card-value" id="faixaSaudavel" style="font-size:15px;padding-top:4px">—</div>
       </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="btn" id="btnCompartilhar" onclick="compartilharIMC()" style="display:none; width:auto; margin:0;">Compartilhar Resultado</button>
     </div>
 
     <div style="margin-top:16px">
@@ -207,6 +213,27 @@ function calcularIMC(){
   const res = document.getElementById('resultado');
   res.style.display = 'block';
   res.style.animation = 'fadeIn 0.4s';
+
+  // Mostrar botão de compartilhar
+  document.getElementById('btnCompartilhar').style.display = 'inline-flex';
+}
+
+function compartilharIMC() {
+    const imc = document.getElementById('valorIMC').textContent;
+    const classe = document.getElementById('classIMC').textContent;
+    
+    const texto = `📊 Meu IMC no Calcula Fácil!\n✅ Resultado: ${imc}\n⚖️ Classificação: ${classe}\n\nCalcule o seu também em: calculafacil.up.railway.app`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'Meu IMC',
+            text: texto
+        }).catch((error) => console.log('Erro ao compartilhar', error));
+    } else {
+        navigator.clipboard.writeText(texto).then(() => {
+            alert("Resumo copiado! Agora é só colar no WhatsApp.");
+        });
+    }
 }
 
 document.addEventListener('keydown', e => { if(e.key === 'Enter') calcularIMC(); });
