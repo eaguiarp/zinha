@@ -1,24 +1,28 @@
 const express = require('express');
 const router = express.Router();
 
-router.post('/calcular-horas', (req, res) => {
-  const { inicio, fim, intervalo, valorHora } = req.body;
+router.post('/calcular-hora-extra', (req, res) => {
+    const { salarioBruto, horasMensais, horasExtras, porcentagem } = req.body;
 
-  const [h1, m1] = inicio.split(':').map(Number);
-  const [h2, m2] = fim.split(':').map(Number);
+    const salario = parseFloat(salarioBruto);
+    const mensal = parseInt(horasMensais);
+    const extras = parseFloat(horasExtras);
+    const pct = parseFloat(porcentagem);
 
-  let minutosInicio = h1 * 60 + m1;
-  let minutosFim = h2 * 60 + m2;
+    // Cálculo da hora comum
+    const valorHoraComum = salario / mensal;
+    
+    // Cálculo da hora extra (Valor comum + adicional %)
+    const valorHoraExtra = valorHoraComum * (1 + pct / 100);
+    
+    // Total
+    const totalReceber = valorHoraExtra * extras;
 
-  let totalMinutos = minutosFim - minutosInicio - (intervalo * 60);
-
-  let horas = totalMinutos / 60;
-  let valor = horas * valorHora;
-
-  res.json({
-    horasTrabalhadas: horas,
-    valorTotal: valor
-  });
+    res.json({
+        valorHoraComum: valorHoraComum.toFixed(2),
+        valorHoraExtra: valorHoraExtra.toFixed(2),
+        totalReceber: totalReceber.toFixed(2)
+    });
 });
 
 module.exports = router;
