@@ -51,7 +51,7 @@
     <div class="row">
         <div class="field">
             <label>Salário Bruto Atual (R$)</label>
-            <input type="number" id="salario" value="3000" min="0" step="100">
+            <input type="text" id="salario" value="3.000,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
         </div>
         <div class="field">
             <label>Data de Admissão</label>
@@ -59,7 +59,7 @@
         </div>
         <div class="field">
             <label>Saldo FGTS na Conta (R$)</label>
-            <input type="number" id="saldoAtual" value="0" min="0" step="100">
+            <input type="text" id="saldoAtual" value="0,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
             <small>Consulte no app FGTS da Caixa</small>
         </div>
         <div class="field">
@@ -105,6 +105,18 @@
 </div>
 <script>
     function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+    function formatarMoeda(input){
+        const valor = input.value.replace(/\D/g,'');
+        const numero = parseInt(valor || '0', 10);
+        input.value = (numero/100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function preencherZeroSeVazio(input){
+        if(!input.value.trim()) input.value = '0,00';
+    }
+    function moedaParaNumero(valor){
+        if(!valor) return 0;
+        return parseFloat(valor.replace(/[\.]/g,'').replace(',','.'))||0;
+    }
 
     const infos = {
         sjc:   'Na demissão sem justa causa, você tem direito a sacar todo o saldo do FGTS + multa de 40% sobre o saldo. O empregador também paga 10% à União.',
@@ -121,9 +133,9 @@
     };
 
     function calcular(){
-        const salario   = parseFloat(document.getElementById('salario').value)||0;
+        const salario   = moedaParaNumero(document.getElementById('salario').value)||0;
         const admissao  = new Date(document.getElementById('admissao').value);
-        const saldoAtual= parseFloat(document.getElementById('saldoAtual').value)||0;
+        const saldoAtual= moedaParaNumero(document.getElementById('saldoAtual').value)||0;
         const tipo      = document.getElementById('tipoDemissao').value;
         const hoje      = new Date();
 

@@ -91,11 +91,11 @@
         <div class="row">
             <div class="field">
                 <label>Aporte Inicial (R$)</label>
-                <input type="number" id="aporteInicial" value="5000" min="0" step="100">
+                <input type="text" id="aporteInicial" value="5.000,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
             </div>
             <div class="field">
                 <label>Aporte Mensal (R$)</label>
-                <input type="number" id="aporteMensal" value="500" min="0" step="50">
+                <input type="text" id="aporteMensal" value="500,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
             </div>
             <div class="field">
                 <label>Taxa Mensal (%)</label>
@@ -149,7 +149,7 @@
             </div>
             <div class="field">
                 <label>Valor da Meta (R$)</label>
-                <input type="number" id="metaObjetivo" value="30000" min="100" step="1000">
+                <input type="text" id="metaObjetivo" value="30.000,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
             </div>
         </div>
 
@@ -157,7 +157,7 @@
         <div class="row">
             <div class="field">
                 <label>Já tem algum valor guardado? (R$)</label>
-                <input type="number" id="metaInicial" value="0" min="0" step="100">
+                <input type="text" id="metaInicial" value="0,00" inputmode="decimal" oninput="formatarMoeda(this)" onblur="preencherZeroSeVazio(this)">
             </div>
             <div class="field">
                 <label>Em quanto tempo? (Meses)</label>
@@ -195,6 +195,18 @@
 <script>
     let myChart = null;
     function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+    function formatarMoeda(input){
+        const valor = input.value.replace(/\D/g,'');
+        const numero = parseInt(valor || '0', 10);
+        input.value = (numero/100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function preencherZeroSeVazio(input){
+        if(!input.value.trim()) input.value = '0,00';
+    }
+    function moedaParaNumero(valor){
+        if(!valor) return 0;
+        return parseFloat(valor.replace(/\./g,'').replace(',','.'))||0;
+    }
 
     // Função para alternar entre as abas
     function mudarAba(abaId, btn) {
@@ -212,8 +224,8 @@
     }
 
     function calcular(){
-        const ai   = parseFloat(document.getElementById('aporteInicial').value)||0;
-        const am   = parseFloat(document.getElementById('aporteMensal').value)||0;
+        const ai   = moedaParaNumero(document.getElementById('aporteInicial').value)||0;
+        const am   = moedaParaNumero(document.getElementById('aporteMensal').value)||0;
         const taxa = parseFloat(document.getElementById('taxa').value)/100||0;
         const n    = parseInt(document.getElementById('periodo').value)||1;
         const ir   = parseFloat(document.getElementById('ir').value)||0;
@@ -271,8 +283,8 @@
 
     // Função NOVA da Calculadora de Metas
     function calcularMeta() {
-        const objetivo = parseFloat(document.getElementById('metaObjetivo').value) || 0;
-        const inicial = parseFloat(document.getElementById('metaInicial').value) || 0;
+        const objetivo = moedaParaNumero(document.getElementById('metaObjetivo').value) || 0;
+        const inicial = moedaParaNumero(document.getElementById('metaInicial').value) || 0;
         const meses = parseInt(document.getElementById('metaMeses').value) || 1;
         const taxaStr = document.getElementById('metaOnde').value;
         const taxa = parseFloat(taxaStr) / 100;
@@ -309,7 +321,7 @@
         const nomeMeta = document.getElementById('metaNome').value || "meu objetivo";
         const meses = document.getElementById('metaMeses').value;
         const aporte = document.getElementById('resAporteNecessario').textContent;
-        const objetivo = fmt(parseFloat(document.getElementById('metaObjetivo').value));
+        const objetivo = fmt(moedaParaNumero(document.getElementById('metaObjetivo').value));
         
         const texto = `🎯 Fiz meu planejamento no Zinha!\n\nPara alcançar ${objetivo} (${nomeMeta}) em ${meses} meses, eu preciso investir:\n💰 ${aporte} por mês.\n\nFaça seu plano também: https://zinha.com.br/financas/INVESTIMENTO/`;
         
