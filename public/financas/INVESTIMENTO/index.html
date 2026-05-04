@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Investimento e Metas - Calcula Fácil</title>
+    <title>Simulador de Investimento e Metas | Zinha</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
@@ -264,7 +264,7 @@
     function compartilharSimulador(){
         const tot = document.getElementById('r2Total').textContent;
         const n = document.getElementById('periodo').value;
-        const texto = `📈 Simulei meu investimento no Calcula Fácil!\n\nEm ${n} meses terei aproximadamente:\n🏆 Montante Final: ${tot}\n\nSimule você também: calculafacil.up.railway.app`;
+        const texto = `📈 Simulei meu investimento no Zinha!\n\nEm ${n} meses terei aproximadamente:\n🏆 Montante Final: ${tot}\n\nSimule você também: https://zinha.com.br/financas/INVESTIMENTO/`;
         if(navigator.share){ navigator.share({title:'Minha Simulação',text:texto}); }
         else { navigator.clipboard.writeText(texto).then(()=>alert('Copiado!')); }
     }
@@ -311,7 +311,7 @@
         const aporte = document.getElementById('resAporteNecessario').textContent;
         const objetivo = fmt(parseFloat(document.getElementById('metaObjetivo').value));
         
-        const texto = `🎯 Fiz meu planejamento no Calcula Fácil!\n\nPara alcançar ${objetivo} (${nomeMeta}) em ${meses} meses, eu preciso investir:\n💰 ${aporte} por mês.\n\nFaça seu plano também: calculafacil.up.railway.app`;
+        const texto = `🎯 Fiz meu planejamento no Zinha!\n\nPara alcançar ${objetivo} (${nomeMeta}) em ${meses} meses, eu preciso investir:\n💰 ${aporte} por mês.\n\nFaça seu plano também: https://zinha.com.br/financas/INVESTIMENTO/`;
         
         if(navigator.share){ navigator.share({title:'Meu Plano Financeiro',text:texto}); }
         else { navigator.clipboard.writeText(texto).then(()=>alert('Plano copiado!')); }

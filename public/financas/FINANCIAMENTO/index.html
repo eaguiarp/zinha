@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Financiamento - Calcula Fácil</title>
+    <title>Calculadora de Financiamento | Zinha</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
@@ -60,7 +60,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>Calculadora de Financiamento</h1>
+        <h1>Calculadora de Financiamento | Zinha</h1>
         <a href="/financas/">← Voltar</a>
     </div>
     <p class="subtitle">Simule um novo financiamento ou descubra a taxa de juros de um que você já tem.</p>
@@ -231,7 +231,7 @@
     }
 
     function compartilharSimular(){
-        const t = `🏦 Simulei meu financiamento no Calcula Fácil!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: util.com.br/financas/`;
+        const t = `🏦 Simulei meu financiamento no Zinha!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: https://zinha.com.br/financas/FINANCIAMENTO/`;
         navigator.share ? navigator.share({title:'Financiamento',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 
@@ -292,7 +292,7 @@
     }
 
     function compartilharDescobrir(){
-        const t = `🔍 Descobri a taxa do meu financiamento!\n\n📊 Taxa Mensal: ${document.getElementById('d-rTaxaMes').textContent}\n📈 Taxa Anual: ${document.getElementById('d-rTaxaAno').textContent}\n💸 Total de Juros: ${document.getElementById('d-rJuros').textContent}\n💰 Custo Total: ${document.getElementById('d-tTotal').textContent}\n\nDescubra a sua: util.com.br/financas/`;
+        const t = `🔍 Descobri a taxa do meu financiamento!\n\n📊 Taxa Mensal: ${document.getElementById('d-rTaxaMes').textContent}\n📈 Taxa Anual: ${document.getElementById('d-rTaxaAno').textContent}\n💸 Total de Juros: ${document.getElementById('d-rJuros').textContent}\n💰 Custo Total: ${document.getElementById('d-tTotal').textContent}\n\nDescubra a sua: https://zinha.com.br/financas/FINANCIAMENTO/`;
         navigator.share ? navigator.share({title:'Minha Taxa',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>

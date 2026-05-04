@@ -1,5 +1,12 @@
-
-<style>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IMC | Zinha</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+    <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#333;padding:2rem 1rem}
 .container{max-width:850px;margin:0 auto;background:white;border-radius:15px;box-shadow:0 4px 6px rgba(0,0,0,0.1);padding:2rem}
@@ -38,11 +45,12 @@ tr.ativo td{background:#e8f0fe;font-weight:bold;color:#1a73e8}
 </style>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-
+</head>
+<body>
 
 <div class="container">
   <div class="header">
-    <h1>Calculadora de IMC</h1>
+    <h1>Calculadora de IMC | Zinha</h1>
     <a href="/" style="color:#1a73e8;text-decoration:none;font-size:14px;font-weight:bold">← Voltar ao Menu</a>
   </div>
   <p class="subtitle">Preencha seus dados e clique em calcular para ver o resultado.</p>
@@ -223,7 +231,7 @@ function compartilharIMC() {
     const imc = document.getElementById('valorIMC').textContent;
     const classe = document.getElementById('classIMC').textContent;
     
-    const texto = `📊 Meu IMC no Calcula Fácil!\n✅ Resultado: ${imc}\n⚖️ Classificação: ${classe}\n\nCalcule o seu também em: calculafacil.up.railway.app`;
+    const texto = `📊 Meu IMC no Zinha!\n✅ Resultado: ${imc}\n⚖️ Classificação: ${classe}\n\nCalcule o seu também em: https://zinha.com.br/imc/`;
 
     if (navigator.share) {
         navigator.share({
