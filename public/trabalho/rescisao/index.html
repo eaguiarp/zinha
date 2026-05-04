@@ -34,10 +34,13 @@
         .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #555; border-bottom: 1px solid #d0dff8; }
         .total-row:last-child { border-bottom: none; }
         .total-row.destaque { font-weight: bold; color: #1a73e8; font-size: 18px; border-top: 2px solid #fff; padding-top: 15px; margin-top: 5px; border-bottom: none; }
-        .total-row.nao-aplica span:last-child { color: #aaa; font-style: italic; }
-        .info-box { border-radius: 8px; padding: 14px 16px; margin-top: 16px; font-size: 13px; line-height: 1.7; }
-        .info-box.azul { background: #e8f0fe; border-left: 4px solid #1a73e8; color: #1a237e; }
+        .info-box { border-radius: 8px; padding: 14px 16px; margin-top: 12px; font-size: 13px; line-height: 1.7; }
+        .info-box.azul   { background: #e8f0fe; border-left: 4px solid #1a73e8; color: #1a237e; }
+        .info-box.laranja { background: #fff3e0; border-left: 4px solid #f9a825; color: #555; }
         .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+        /* campo bloqueado aparece com animação suave */
+        .campo-aniversario { animation: slideDown 0.25s ease; }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
 <body>
@@ -72,11 +75,37 @@
             <input type="number" id="meses13Rec" value="0" min="0" max="11">
             <small>Informe se já recebeu adiantamento</small>
         </div>
+    </div>
+
+    <p class="section-title">FGTS</p>
+    <div class="row">
         <div class="field">
             <label>Saldo FGTS na Conta (R$)</label>
             <input type="number" id="fgts" value="0" min="0" step="100">
             <small>Consulte no app FGTS da Caixa</small>
         </div>
+        <div class="field">
+            <label>Modalidade de Saque</label>
+            <select id="modalidadeFGTS" onchange="toggleSaqueBloqueado()">
+                <option value="rescisao">Saque-Rescisão (padrão)</option>
+                <option value="aniversario">Saque-Aniversário</option>
+            </select>
+            <small>Verifique no app FGTS da Caixa</small>
+        </div>
+        <div class="field campo-aniversario" id="campoSaldoBloqueado" style="display:none">
+            <label>Saldo Bloqueado (R$)</label>
+            <input type="number" id="saldoBloqueado" value="0" min="0" step="100">
+            <small>Valor que ficará retido mesmo após a rescisão</small>
+        </div>
+    </div>
+
+    <!-- Aviso saque-aniversário -->
+    <div class="info-box laranja" id="avisoAniversario" style="display:none">
+        ⚠️ <strong>Você está no Saque-Aniversário.</strong> Nessa modalidade, <strong>você perde o direito de sacar o saldo total do FGTS</strong> em caso de demissão sem justa causa. Receberá apenas a multa de 40% — o saldo fica bloqueado. Para voltar ao saque-rescisão, solicite à Caixa e aguarde <strong>2 anos de carência</strong>.
+    </div>
+
+    <p class="section-title">Outros Dados</p>
+    <div class="row">
         <div class="field">
             <label>Férias Vencidas</label>
             <select id="feriasVencidas">
@@ -106,34 +135,43 @@
         <div class="card"><div class="card-label">Saldo de Salário</div><div class="card-value" id="rSaldo">R$ 0,00</div></div>
         <div class="card"><div class="card-value" id="rFeriasCard">R$ 0,00</div><div class="card-label">Férias + 1/3</div></div>
         <div class="card"><div class="card-value" id="r13Card">R$ 0,00</div><div class="card-label">13º Proporcional</div></div>
-        <div class="card"><div class="card-value" id="rFGTSCard" style="color:#c2185b">R$ 0,00</div><div class="card-label">FGTS + Multa</div></div>
+        <div class="card"><div class="card-value" id="rFGTSCard" style="color:#c2185b">R$ 0,00</div><div class="card-label">FGTS Disponível + Multa</div></div>
     </div>
 
     <div class="total-box">
         <div class="total-row"><span>Saldo de Salário</span><span id="t1">R$ 0,00</span></div>
-        <div class="total-row"><span>Aviso Prévio</span><span id="t2">R$ 0,00</span></div>
-        <div class="total-row"><span>Férias Vencidas + 1/3</span><span id="t3">R$ 0,00</span></div>
+        <div class="total-row"><span>Aviso Prévio</span><span id="t2">—</span></div>
+        <div class="total-row"><span>Férias Vencidas + 1/3</span><span id="t3">—</span></div>
         <div class="total-row"><span>Férias Proporcionais + 1/3</span><span id="t4">R$ 0,00</span></div>
-        <div class="total-row"><span>13º Proporcional</span><span id="t5">R$ 0,00</span></div>
-        <div class="total-row"><span>FGTS (saldo + depósito mês)</span><span id="t6">R$ 0,00</span></div>
-        <div class="total-row" id="rowMulta"><span>Multa FGTS</span><span id="t7">R$ 0,00</span></div>
-        <div class="total-row"><span>Desconto INSS</span><span id="t8" style="color:#c62828">- R$ 0,00</span></div>
-        <div class="total-row"><span>Desconto IRRF</span><span id="t9" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row"><span>13º Proporcional</span><span id="t5">—</span></div>
+        <div class="total-row" style="border-top: 1px dashed #aac4f0; margin-top:4px; padding-top:4px">
+            <span>FGTS — Saldo Total</span><span id="t6">R$ 0,00</span>
+        </div>
+        <div class="total-row" id="rowBloqueado" style="display:none">
+            <span>(-) Saldo Bloqueado (Saque-Aniversário)</span>
+            <span id="t6b" style="color:#c62828">— R$ 0,00</span>
+        </div>
+        <div class="total-row"><span>FGTS Disponível p/ Saque</span><span id="t6c">R$ 0,00</span></div>
+        <div class="total-row"><span>Multa FGTS</span><span id="t7">—</span></div>
+        <div class="total-row" style="border-top: 1px dashed #aac4f0; margin-top:4px; padding-top:4px">
+            <span>Desconto INSS</span><span id="t8" style="color:#c62828">—</span>
+        </div>
+        <div class="total-row"><span>Desconto IRRF</span><span id="t9" style="color:#c62828">—</span></div>
         <div class="total-row destaque"><span>Total Líquido Estimado</span><span id="tTotal">R$ 0,00</span></div>
     </div>
 
     <p class="footer-note">
         ⚠️ Simulação estimada com base na CLT. Aviso prévio proporcional ao tempo de serviço (1 dia por ano, máximo 90 dias).<br>
-        Férias em dobro ocorrem quando o empregador não concede as férias dentro do prazo legal. Consulte seu RH ou advogado para valores exatos.
+        Férias em dobro ocorrem quando o empregador não concede férias dentro do prazo legal. Consulte seu RH ou advogado para valores exatos.
     </p>
 </div>
 <script>
     function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
     const infoTextos = {
-        sjc:    '📋 <strong>Sem Justa Causa:</strong> Você tem direito a saldo de salário, aviso prévio (trabalhado ou indenizado), férias vencidas e proporcionais + 1/3, 13º proporcional, multa de 40% do FGTS e saque do FGTS.',
-        acordo: '📋 <strong>Acordo (art. 484-A):</strong> Metade do aviso prévio indenizado, metade da multa do FGTS (20%), férias e 13º proporcionais. Permite sacar 80% do saldo do FGTS.',
-        pedido: '📋 <strong>Pedido de Demissão:</strong> Saldo de salário, férias vencidas e proporcionais + 1/3, 13º proporcional. Sem aviso prévio indenizado, sem multa do FGTS, sem saque imediato do FGTS.',
+        sjc:    '📋 <strong>Sem Justa Causa:</strong> Direito a saldo de salário, aviso prévio indenizado, férias + 1/3, 13º proporcional, multa de 40% do FGTS e saque do saldo (se não estiver no Saque-Aniversário).',
+        acordo: '📋 <strong>Acordo (art. 484-A):</strong> Metade do aviso prévio indenizado, multa de 20% do FGTS, férias e 13º proporcionais. Permite sacar 80% do saldo do FGTS.',
+        pedido: '📋 <strong>Pedido de Demissão:</strong> Saldo de salário, férias vencidas e proporcionais + 1/3, 13º proporcional. Sem aviso prévio indenizado, sem multa do FGTS e sem saque do saldo.',
         cjc:    '📋 <strong>Com Justa Causa:</strong> Apenas saldo de salário e férias vencidas + 1/3. Sem aviso prévio, sem 13º proporcional e sem multa do FGTS.'
     };
 
@@ -149,13 +187,27 @@
         document.getElementById('infoTipo').innerHTML = infoTextos[tipo];
     }
 
+    function toggleSaqueBloqueado(){
+        const modalidade = document.getElementById('modalidadeFGTS').value;
+        const campo  = document.getElementById('campoSaldoBloqueado');
+        const aviso  = document.getElementById('avisoAniversario');
+        if(modalidade === 'aniversario'){
+            campo.style.display = 'flex';
+            campo.classList.add('campo-aniversario');
+            aviso.style.display = 'block';
+        } else {
+            campo.style.display = 'none';
+            aviso.style.display = 'none';
+        }
+    }
+
     function calcINSS(base){
         const faixas = [{ate:1518,aliq:0.075},{ate:2793.88,aliq:0.09},{ate:4190.83,aliq:0.12},{ate:8157.41,aliq:0.14}];
         let inss=0, ant=0;
         for(const f of faixas){
             if(base<=ant) break;
-            const teto=Math.min(base,f.ate);
-            inss+=(teto-ant)*f.aliq; ant=f.ate;
+            inss+=(Math.min(base,f.ate)-ant)*f.aliq;
+            ant=f.ate;
             if(base<=f.ate) break;
         }
         return inss;
@@ -169,77 +221,92 @@
     }
 
     function calcular(){
-        const salario    = parseFloat(document.getElementById('salario').value)||0;
-        const admissao   = new Date(document.getElementById('admissao').value);
-        const tipo       = document.getElementById('tipo').value;
-        const fgtsSaldo  = parseFloat(document.getElementById('fgts').value)||0;
-        const meses13Rec = parseInt(document.getElementById('meses13Rec').value)||0;
-        const dependentes= parseInt(document.getElementById('dependentes').value)||0;
-        const hoje       = new Date();
+        const salario      = parseFloat(document.getElementById('salario').value)||0;
+        const admissao     = new Date(document.getElementById('admissao').value);
+        const tipo         = document.getElementById('tipo').value;
+        const fgtsSaldo    = parseFloat(document.getElementById('fgts').value)||0;
+        const modalidade   = document.getElementById('modalidadeFGTS').value;
+        const saldoBloq    = modalidade === 'aniversario' ? (parseFloat(document.getElementById('saldoBloqueado').value)||0) : 0;
+        const meses13Rec   = parseInt(document.getElementById('meses13Rec').value)||0;
+        const dependentes  = parseInt(document.getElementById('dependentes').value)||0;
+        const hoje         = new Date();
 
-        const mesesTotal = (hoje.getFullYear()-admissao.getFullYear())*12 + (hoje.getMonth()-admissao.getMonth());
-        const diasMes    = hoje.getDate();
-        const anosServ   = Math.floor(mesesTotal/12);
+        const mesesTotal   = (hoje.getFullYear()-admissao.getFullYear())*12 + (hoje.getMonth()-admissao.getMonth());
+        const diasMes      = hoje.getDate();
+        const anosServ     = Math.floor(mesesTotal/12);
 
-        // Saldo salário (dias trabalhados no mês atual)
+        // Saldo salário
         const saldoSalario = (salario/30)*diasMes;
 
         // Aviso prévio
-        const diasAviso  = Math.min(30 + anosServ, 90);
-        const avisoPrevio = tipo === 'sjc' ? (salario/30)*diasAviso
-                          : tipo === 'acordo' ? (salario/30)*(diasAviso/2)
+        const diasAviso   = Math.min(30 + anosServ, 90);
+        const avisoPrevio = tipo==='sjc'    ? (salario/30)*diasAviso
+                          : tipo==='acordo' ? (salario/30)*(diasAviso/2)
                           : 0;
 
-        // Férias vencidas — informado pelo usuário
-        const periodosFeriasVenc = parseInt(document.getElementById('feriasVencidas').value)||0;
-        const mesesPeriodoAtual  = mesesTotal % 12;
-        const feriasVencidas = periodosFeriasVenc === 2
-            ? (salario + salario/3) * 2
-            : periodosFeriasVenc === 1
-            ? salario + salario/3
-            : 0;
+        // Férias vencidas
+        const periodosFV   = parseInt(document.getElementById('feriasVencidas').value)||0;
+        const feriasVencidas = periodosFV === 2 ? (salario+salario/3)*2
+                             : periodosFV === 1 ? (salario+salario/3)
+                             : 0;
 
         // Férias proporcionais
-        const feriasProp = (salario/12)*mesesPeriodoAtual + (salario/12)*mesesPeriodoAtual/3;
+        const mesesPeriodo = mesesTotal % 12;
+        const feriasProp   = (salario/12)*mesesPeriodo * (4/3); // inclui 1/3
 
         // 13º proporcional
-        const mesesAno = hoje.getMonth() + 1;
+        const mesesAno = hoje.getMonth()+1;
         const meses13  = mesesAno - meses13Rec;
         const dec13    = tipo !== 'cjc' ? (salario/12)*meses13 : 0;
 
-        // FGTS
-        const fgtsDeposito = salario*0.08;
-        const fgtsTotal    = fgtsSaldo + fgtsDeposito;
-        const pctMulta     = tipo==='sjc' ? 0.40 : tipo==='acordo' ? 0.20 : 0;
-        const multaFGTS    = fgtsTotal * pctMulta;
+        // FGTS — lógica saque-aniversário
+        const fgtsDeposito  = salario*0.08;
+        const fgtsTotal     = fgtsSaldo + fgtsDeposito;
+        const pctMulta      = tipo==='sjc' ? 0.40 : tipo==='acordo' ? 0.20 : 0;
+        const multaFGTS     = fgtsTotal * pctMulta;
 
-        // Verbas tributáveis (INSS + IRRF incidem sobre algumas)
+        // No saque-aniversário, na demissão SJC não pode sacar o saldo (só a multa)
+        const fgtsDisponivel = modalidade === 'aniversario'
+            ? (tipo === 'acordo' ? (fgtsTotal - saldoBloq) * 0.80 : 0)
+            : (tipo === 'sjc' || tipo === 'acordo' ? fgtsTotal : 0);
+
+        // INSS e IRRF (sobre verbas salariais)
         const baseTributavel = saldoSalario + avisoPrevio + dec13;
         const inss = calcINSS(baseTributavel);
         const irrf = calcIRRF(baseTributavel - inss, dependentes);
 
-        const totalBruto = saldoSalario + avisoPrevio + feriasVencidas + feriasProp + dec13 + fgtsTotal + multaFGTS;
+        const totalBruto = saldoSalario + avisoPrevio + feriasVencidas + feriasProp + dec13 + fgtsDisponivel + multaFGTS;
         const liquido    = totalBruto - inss - irrf;
 
         // Cards
-        document.getElementById('rSaldo').textContent   = fmt(saldoSalario);
+        document.getElementById('rSaldo').textContent      = fmt(saldoSalario);
         document.getElementById('rFeriasCard').textContent = fmt(feriasVencidas + feriasProp);
-        document.getElementById('r13Card').textContent  = fmt(dec13);
-        document.getElementById('rFGTSCard').textContent= fmt(fgtsTotal + multaFGTS);
+        document.getElementById('r13Card').textContent     = fmt(dec13);
+        document.getElementById('rFGTSCard').textContent   = fmt(fgtsDisponivel + multaFGTS);
 
         // Tabela
         document.getElementById('t1').textContent = fmt(saldoSalario);
         document.getElementById('t2').textContent = avisoPrevio > 0 ? fmt(avisoPrevio) : 'Não se aplica';
         document.getElementById('t3').textContent = feriasVencidas > 0
-            ? fmt(feriasVencidas) + (periodosFeriasVenc === 2 ? ' (em dobro)' : '')
+            ? fmt(feriasVencidas) + (periodosFV === 2 ? ' (em dobro)' : '')
             : 'Não se aplica';
-        document.getElementById('t4').textContent = fmt(feriasProp);
-        document.getElementById('t5').textContent = dec13 > 0 ? fmt(dec13) : 'Não se aplica';
-        document.getElementById('t6').textContent = fmt(fgtsTotal);
-        document.getElementById('t7').textContent = multaFGTS > 0 ? fmt(multaFGTS) + ` (${pctMulta*100}%)` : 'Não se aplica';
-        document.getElementById('t8').textContent = '- ' + fmt(inss);
-        document.getElementById('t9').textContent = irrf > 0 ? '- ' + fmt(irrf) : 'Isento';
+        document.getElementById('t4').textContent  = fmt(feriasProp);
+        document.getElementById('t5').textContent  = dec13 > 0 ? fmt(dec13) : 'Não se aplica';
+        document.getElementById('t6').textContent  = fmt(fgtsTotal);
+        document.getElementById('t6c').textContent = fgtsDisponivel > 0 ? fmt(fgtsDisponivel) : 'Bloqueado (Saque-Aniversário)';
+        document.getElementById('t7').textContent  = multaFGTS > 0 ? fmt(multaFGTS)+` (${pctMulta*100}%)` : 'Não se aplica';
+        document.getElementById('t8').textContent  = '- ' + fmt(inss);
+        document.getElementById('t9').textContent  = irrf > 0 ? '- ' + fmt(irrf) : 'Isento';
         document.getElementById('tTotal').textContent = fmt(liquido);
+
+        // Linha saldo bloqueado
+        const rowBloq = document.getElementById('rowBloqueado');
+        if(modalidade === 'aniversario' && saldoBloq > 0){
+            rowBloq.style.display = 'flex';
+            document.getElementById('t6b').textContent = '— ' + fmt(saldoBloq);
+        } else {
+            rowBloq.style.display = 'none';
+        }
 
         document.getElementById('btnShare').style.display = 'inline-flex';
     }
@@ -247,7 +314,8 @@
     function compartilhar(){
         const total = document.getElementById('tTotal').textContent;
         const tipo  = document.getElementById('tipo');
-        const texto = `📄 Simulei minha rescisão no Zinha!\n\n✅ Total Líquido Estimado: ${total}\n📋 Tipo: ${tipo.options[tipo.selectedIndex].text}\n\nSimule a sua: zinha.com.br/trabalho/rescisao/`;
+        const mod   = document.getElementById('modalidadeFGTS').value === 'aniversario' ? ' | Saque-Aniversário ativo' : '';
+        const texto = `📄 Simulei minha rescisão no Zinha!\n\n✅ Total Líquido Estimado: ${total}\n📋 Tipo: ${tipo.options[tipo.selectedIndex].text}${mod}\n\nSimule a sua: zinha.com.br/trabalho/rescisao/`;
         navigator.share ? navigator.share({title:'Minha Rescisão',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
     }
 </script>
