@@ -80,9 +80,11 @@
     <p class="section-title">FGTS</p>
     <div class="row">
         <div class="field">
-            <label>Saldo FGTS na Conta (R$)</label>
+            <label>
+  Saldo FGTS na Conta (<em style="color:#666;">fins rescisórios</em>) (R$)
+</label>
             <input type="number" id="fgts" value="0" min="0" step="100">
-            <small>Consulte no app FGTS da Caixa</small>
+            <small>Consulte no app FGTS (valor total, não apenas o disponível)</small>
         </div>
         <div class="field">
             <label>Modalidade de Saque</label>
@@ -260,16 +262,25 @@
         const dec13    = tipo !== 'cjc' ? (salario/12)*meses13 : 0;
 
         // FGTS — lógica saque-aniversário
-        const fgtsDeposito  = salario*0.08;
-        const fgtsTotal     = fgtsSaldo + fgtsDeposito;
+        
+        const fgtsTotal     = fgtsSaldo;
         const pctMulta      = tipo==='sjc' ? 0.40 : tipo==='acordo' ? 0.20 : 0;
         const multaFGTS     = fgtsTotal * pctMulta;
 
         // No saque-aniversário, na demissão SJC não pode sacar o saldo (só a multa)
-        const fgtsDisponivel = modalidade === 'aniversario'
-            ? (tipo === 'acordo' ? (fgtsTotal - saldoBloq) * 0.80 : 0)
-            : (tipo === 'sjc' || tipo === 'acordo' ? fgtsTotal : 0);
+        let fgtsDisponivel = 0;
 
+if (modalidade === 'aniversario') {
+    if (tipo === 'acordo') {
+        fgtsDisponivel = Math.max(0, (fgtsTotal - saldoBloq) * 0.80);
+    } else {
+        fgtsDisponivel = 0;
+    }
+} else {
+    if (tipo === 'sjc' || tipo === 'acordo') {
+        fgtsDisponivel = fgtsTotal;
+    }
+}
         // INSS e IRRF (sobre verbas salariais)
         const baseTributavel = saldoSalario + avisoPrevio + dec13;
         const inss = calcINSS(baseTributavel);
