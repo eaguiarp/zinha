@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rescisão Trabalhista — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 850px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .header a:hover { text-decoration: underline; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #333; background: #fff; outline: none; transition: all 0.2s; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-width: 200px; }
+        .btn:hover { background: #1557b0; }
+        .btn:active { transform: scale(0.98); }
+        .btn-share { background: #25D366; color: white; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin: 1rem 0; }
+        .card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e8f0fe; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
+        .card-value { font-size: 18px; font-weight: bold; color: #1a73e8; }
+        .total-box { background: #e8f0fe; border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .total-row:last-child { border-bottom: none; }
+        .total-row.destaque { font-weight: bold; color: #1a73e8; font-size: 18px; border-top: 2px solid #fff; padding-top: 15px; margin-top: 5px; border-bottom: none; }
+        .total-row.nao-aplica span:last-child { color: #aaa; font-style: italic; }
+        .info-box { border-radius: 8px; padding: 14px 16px; margin-top: 16px; font-size: 13px; line-height: 1.7; }
+        .info-box.azul { background: #e8f0fe; border-left: 4px solid #1a73e8; color: #1a237e; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📄 Rescisão Trabalhista</h1>
+        <a href="/trabalho/">← Voltar</a>
+    </div>
+    <p class="subtitle">Simule os valores da rescisão de acordo com o tipo de demissão.</p>
+
+    <p class="section-title">Dados do Vínculo Empregatício</p>
+    <div class="row">
+        <div class="field">
+            <label>Salário Bruto (R$)</label>
+            <input type="number" id="salario" value="3000" min="0" step="100">
+        </div>
+        <div class="field">
+            <label>Data de Admissão</label>
+            <input type="date" id="admissao">
+        </div>
+        <div class="field">
+            <label>Tipo de Demissão</label>
+            <select id="tipo" onchange="atualizarTipo()">
+                <option value="sjc">Sem Justa Causa (pelo empregador)</option>
+                <option value="acordo">Acordo entre as partes (art. 484-A)</option>
+                <option value="pedido">Pedido de Demissão (pelo funcionário)</option>
+                <option value="cjc">Com Justa Causa (pelo empregador)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Meses do 13º já recebidos</label>
+            <input type="number" id="meses13Rec" value="0" min="0" max="11">
+            <small>Informe se já recebeu adiantamento</small>
+        </div>
+        <div class="field">
+            <label>Saldo FGTS na Conta (R$)</label>
+            <input type="number" id="fgts" value="0" min="0" step="100">
+            <small>Consulte no app FGTS da Caixa</small>
+        </div>
+        <div class="field">
+            <label>Férias Vencidas</label>
+            <select id="feriasVencidas">
+                <option value="0">Não tenho férias vencidas</option>
+                <option value="1">1 período vencido (30 dias)</option>
+                <option value="2">2 períodos ou mais vencidos</option>
+            </select>
+            <small>Férias que você tinha direito mas não tirou</small>
+        </div>
+        <div class="field">
+            <label>Dependentes (IRRF)</label>
+            <input type="number" id="dependentes" value="0" min="0">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcular()">🧮 Calcular Rescisão</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <div class="info-box azul" id="infoTipo">
+        ℹ️ Selecione o tipo de demissão para ver o que está incluído no cálculo.
+    </div>
+
+    <p class="section-title">Resultado da Rescisão</p>
+    <div class="cards">
+        <div class="card"><div class="card-label">Saldo de Salário</div><div class="card-value" id="rSaldo">R$ 0,00</div></div>
+        <div class="card"><div class="card-value" id="rFeriasCard">R$ 0,00</div><div class="card-label">Férias + 1/3</div></div>
+        <div class="card"><div class="card-value" id="r13Card">R$ 0,00</div><div class="card-label">13º Proporcional</div></div>
+        <div class="card"><div class="card-value" id="rFGTSCard" style="color:#c2185b">R$ 0,00</div><div class="card-label">FGTS + Multa</div></div>
+    </div>
+
+    <div class="total-box">
+        <div class="total-row"><span>Saldo de Salário</span><span id="t1">R$ 0,00</span></div>
+        <div class="total-row"><span>Aviso Prévio</span><span id="t2">R$ 0,00</span></div>
+        <div class="total-row"><span>Férias Vencidas + 1/3</span><span id="t3">R$ 0,00</span></div>
+        <div class="total-row"><span>Férias Proporcionais + 1/3</span><span id="t4">R$ 0,00</span></div>
+        <div class="total-row"><span>13º Proporcional</span><span id="t5">R$ 0,00</span></div>
+        <div class="total-row"><span>FGTS (saldo + depósito mês)</span><span id="t6">R$ 0,00</span></div>
+        <div class="total-row" id="rowMulta"><span>Multa FGTS</span><span id="t7">R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto INSS</span><span id="t8" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto IRRF</span><span id="t9" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row destaque"><span>Total Líquido Estimado</span><span id="tTotal">R$ 0,00</span></div>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ Simulação estimada com base na CLT. Aviso prévio proporcional ao tempo de serviço (1 dia por ano, máximo 90 dias).<br>
+        Férias em dobro ocorrem quando o empregador não concede as férias dentro do prazo legal. Consulte seu RH ou advogado para valores exatos.
+    </p>
+</div>
+<script>
+    function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    const infoTextos = {
+        sjc:    '📋 <strong>Sem Justa Causa:</strong> Você tem direito a saldo de salário, aviso prévio (trabalhado ou indenizado), férias vencidas e proporcionais + 1/3, 13º proporcional, multa de 40% do FGTS e saque do FGTS.',
+        acordo: '📋 <strong>Acordo (art. 484-A):</strong> Metade do aviso prévio indenizado, metade da multa do FGTS (20%), férias e 13º proporcionais. Permite sacar 80% do saldo do FGTS.',
+        pedido: '📋 <strong>Pedido de Demissão:</strong> Saldo de salário, férias vencidas e proporcionais + 1/3, 13º proporcional. Sem aviso prévio indenizado, sem multa do FGTS, sem saque imediato do FGTS.',
+        cjc:    '📋 <strong>Com Justa Causa:</strong> Apenas saldo de salário e férias vencidas + 1/3. Sem aviso prévio, sem 13º proporcional e sem multa do FGTS.'
+    };
+
+    window.onload = function(){
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 2);
+        document.getElementById('admissao').value = d.toISOString().slice(0,10);
+        atualizarTipo();
+    };
+
+    function atualizarTipo(){
+        const tipo = document.getElementById('tipo').value;
+        document.getElementById('infoTipo').innerHTML = infoTextos[tipo];
+    }
+
+    function calcINSS(base){
+        const faixas = [{ate:1518,aliq:0.075},{ate:2793.88,aliq:0.09},{ate:4190.83,aliq:0.12},{ate:8157.41,aliq:0.14}];
+        let inss=0, ant=0;
+        for(const f of faixas){
+            if(base<=ant) break;
+            const teto=Math.min(base,f.ate);
+            inss+=(teto-ant)*f.aliq; ant=f.ate;
+            if(base<=f.ate) break;
+        }
+        return inss;
+    }
+
+    function calcIRRF(base, dep){
+        const bc = base - 189.59*dep;
+        const f = [{ate:2259.20,a:0,d:0},{ate:2826.65,a:0.075,d:169.44},{ate:3751.05,a:0.15,d:381.44},{ate:4664.68,a:0.225,d:662.77},{ate:Infinity,a:0.275,d:896}];
+        for(const x of f) if(bc<=x.ate) return Math.max(0,bc*x.a-x.d);
+        return 0;
+    }
+
+    function calcular(){
+        const salario    = parseFloat(document.getElementById('salario').value)||0;
+        const admissao   = new Date(document.getElementById('admissao').value);
+        const tipo       = document.getElementById('tipo').value;
+        const fgtsSaldo  = parseFloat(document.getElementById('fgts').value)||0;
+        const meses13Rec = parseInt(document.getElementById('meses13Rec').value)||0;
+        const dependentes= parseInt(document.getElementById('dependentes').value)||0;
+        const hoje       = new Date();
+
+        const mesesTotal = (hoje.getFullYear()-admissao.getFullYear())*12 + (hoje.getMonth()-admissao.getMonth());
+        const diasMes    = hoje.getDate();
+        const anosServ   = Math.floor(mesesTotal/12);
+
+        // Saldo salário (dias trabalhados no mês atual)
+        const saldoSalario = (salario/30)*diasMes;
+
+        // Aviso prévio
+        const diasAviso  = Math.min(30 + anosServ, 90);
+        const avisoPrevio = tipo === 'sjc' ? (salario/30)*diasAviso
+                          : tipo === 'acordo' ? (salario/30)*(diasAviso/2)
+                          : 0;
+
+        // Férias vencidas — informado pelo usuário
+        const periodosFeriasVenc = parseInt(document.getElementById('feriasVencidas').value)||0;
+        const mesesPeriodoAtual  = mesesTotal % 12;
+        const feriasVencidas = periodosFeriasVenc === 2
+            ? (salario + salario/3) * 2
+            : periodosFeriasVenc === 1
+            ? salario + salario/3
+            : 0;
+
+        // Férias proporcionais
+        const feriasProp = (salario/12)*mesesPeriodoAtual + (salario/12)*mesesPeriodoAtual/3;
+
+        // 13º proporcional
+        const mesesAno = hoje.getMonth() + 1;
+        const meses13  = mesesAno - meses13Rec;
+        const dec13    = tipo !== 'cjc' ? (salario/12)*meses13 : 0;
+
+        // FGTS
+        const fgtsDeposito = salario*0.08;
+        const fgtsTotal    = fgtsSaldo + fgtsDeposito;
+        const pctMulta     = tipo==='sjc' ? 0.40 : tipo==='acordo' ? 0.20 : 0;
+        const multaFGTS    = fgtsTotal * pctMulta;
+
+        // Verbas tributáveis (INSS + IRRF incidem sobre algumas)
+        const baseTributavel = saldoSalario + avisoPrevio + dec13;
+        const inss = calcINSS(baseTributavel);
+        const irrf = calcIRRF(baseTributavel - inss, dependentes);
+
+        const totalBruto = saldoSalario + avisoPrevio + feriasVencidas + feriasProp + dec13 + fgtsTotal + multaFGTS;
+        const liquido    = totalBruto - inss - irrf;
+
+        // Cards
+        document.getElementById('rSaldo').textContent   = fmt(saldoSalario);
+        document.getElementById('rFeriasCard').textContent = fmt(feriasVencidas + feriasProp);
+        document.getElementById('r13Card').textContent  = fmt(dec13);
+        document.getElementById('rFGTSCard').textContent= fmt(fgtsTotal + multaFGTS);
+
+        // Tabela
+        document.getElementById('t1').textContent = fmt(saldoSalario);
+        document.getElementById('t2').textContent = avisoPrevio > 0 ? fmt(avisoPrevio) : 'Não se aplica';
+        document.getElementById('t3').textContent = feriasVencidas > 0
+            ? fmt(feriasVencidas) + (periodosFeriasVenc === 2 ? ' (em dobro)' : '')
+            : 'Não se aplica';
+        document.getElementById('t4').textContent = fmt(feriasProp);
+        document.getElementById('t5').textContent = dec13 > 0 ? fmt(dec13) : 'Não se aplica';
+        document.getElementById('t6').textContent = fmt(fgtsTotal);
+        document.getElementById('t7').textContent = multaFGTS > 0 ? fmt(multaFGTS) + ` (${pctMulta*100}%)` : 'Não se aplica';
+        document.getElementById('t8').textContent = '- ' + fmt(inss);
+        document.getElementById('t9').textContent = irrf > 0 ? '- ' + fmt(irrf) : 'Isento';
+        document.getElementById('tTotal').textContent = fmt(liquido);
+
+        document.getElementById('btnShare').style.display = 'inline-flex';
+    }
+
+    function compartilhar(){
+        const total = document.getElementById('tTotal').textContent;
+        const tipo  = document.getElementById('tipo');
+        const texto = `📄 Simulei minha rescisão no Zinha!\n\n✅ Total Líquido Estimado: ${total}\n📋 Tipo: ${tipo.options[tipo.selectedIndex].text}\n\nSimule a sua: zinha.com.br/trabalho/rescisao/`;
+        navigator.share ? navigator.share({title:'Minha Rescisão',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>

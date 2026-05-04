@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Férias — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 850px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .header a:hover { text-decoration: underline; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #333; background: #fff; outline: none; transition: all 0.2s; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-width: 200px; }
+        .btn:hover { background: #1557b0; }
+        .btn:active { transform: scale(0.98); }
+        .btn-share { background: #25D366; color: white; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin: 1rem 0; }
+        .card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e8f0fe; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
+        .card-value { font-size: 20px; font-weight: bold; color: #1a73e8; }
+        .total-box { background: #e8f0fe; border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .total-row:last-child { border-bottom: none; }
+        .total-row.destaque { font-weight: bold; color: #1a73e8; font-size: 18px; border-top: 2px solid #fff; padding-top: 15px; margin-top: 5px; border-bottom: none; }
+        .info-box { background: #e8f5e9; border-left: 4px solid #43a047; border-radius: 8px; padding: 12px 16px; margin-top: 16px; font-size: 13px; color: #2e7d32; line-height: 1.7; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏖️ Calculadora de Férias</h1>
+        <a href="/trabalho/">← Voltar</a>
+    </div>
+    <p class="subtitle">Calcule o valor bruto e líquido das suas férias com 1/3 constitucional.</p>
+
+    <p class="section-title">Dados para o Cálculo</p>
+    <div class="row">
+        <div class="field">
+            <label>Salário Bruto (R$)</label>
+            <input type="number" id="salario" value="3000" min="0" step="100">
+        </div>
+        <div class="field">
+            <label>Dias de Férias</label>
+            <select id="diasFerias">
+                <option value="30" selected>30 dias (período completo)</option>
+                <option value="20">20 dias (vendeu 10)</option>
+                <option value="15">15 dias (vendeu 15)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Meses Trabalhados no Período</label>
+            <input type="number" id="mesesTrabalhados" value="12" min="1" max="12">
+            <small>Para férias proporcionais</small>
+        </div>
+        <div class="field">
+            <label>Dependentes (IRRF)</label>
+            <input type="number" id="dependentes" value="0" min="0" max="20">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcular()">🧮 Calcular Férias</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <p class="section-title">Resultado</p>
+    <div class="cards">
+        <div class="card"><div class="card-label">Férias Proporcional</div><div class="card-value" id="rProp">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">1/3 Constitucional</div><div class="card-value" id="rTerco">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">Total Bruto</div><div class="card-value" id="rBruto">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">Líquido a Receber</div><div class="card-value" style="color:#2e7d32" id="rLiquido">R$ 0,00</div></div>
+    </div>
+
+    <div class="total-box">
+        <div class="total-row"><span>Férias (proporcional)</span><span id="t1">R$ 0,00</span></div>
+        <div class="total-row"><span>1/3 Constitucional</span><span id="t2">R$ 0,00</span></div>
+        <div class="total-row"><span>Abono Pecuniário (dias vendidos)</span><span id="t3">R$ 0,00</span></div>
+        <div class="total-row"><span>Total Bruto</span><span id="t4">R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto INSS</span><span id="t5" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto IRRF</span><span id="t6" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row destaque"><span>Líquido a Receber</span><span id="tTotal">R$ 0,00</span></div>
+    </div>
+
+    <div class="info-box" id="infoBox" style="display:none">
+        <span id="infoTexto"></span>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ INSS e IRRF calculados pelas tabelas de 2025. Abono pecuniário (venda de férias) não sofre desconto de INSS.<br>
+        Outros descontos como plano de saúde ou vale-refeição não estão incluídos. Consulte seu RH para valores exatos.
+    </p>
+</div>
+<script>
+    function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    // Tabela INSS 2025
+    function calcINSS(base){
+        const faixas = [
+            {ate: 1518.00,  aliq: 0.075},
+            {ate: 2793.88,  aliq: 0.09},
+            {ate: 4190.83,  aliq: 0.12},
+            {ate: 8157.41,  aliq: 0.14},
+        ];
+        let inss = 0, anterior = 0;
+        for(const f of faixas){
+            if(base <= anterior) break;
+            const teto = Math.min(base, f.ate);
+            inss += (teto - anterior) * f.aliq;
+            anterior = f.ate;
+            if(base <= f.ate) break;
+        }
+        return Math.min(inss, 8157.41 * 0.14); // teto simplificado
+    }
+
+    // Tabela IRRF 2025
+    function calcIRRF(base, dependentes){
+        const dedDep = 189.59 * dependentes;
+        const baseCalc = base - dedDep;
+        const faixas = [
+            {ate: 2259.20,  aliq: 0,      deducao: 0},
+            {ate: 2826.65,  aliq: 0.075,  deducao: 169.44},
+            {ate: 3751.05,  aliq: 0.15,   deducao: 381.44},
+            {ate: 4664.68,  aliq: 0.225,  deducao: 662.77},
+            {ate: Infinity, aliq: 0.275,  deducao: 896.00},
+        ];
+        for(const f of faixas){
+            if(baseCalc <= f.ate) return Math.max(0, baseCalc * f.aliq - f.deducao);
+        }
+        return 0;
+    }
+
+    function calcular(){
+        const salario      = parseFloat(document.getElementById('salario').value)||0;
+        const diasFerias   = parseInt(document.getElementById('diasFerias').value)||30;
+        const meses        = parseInt(document.getElementById('mesesTrabalhados').value)||12;
+        const dependentes  = parseInt(document.getElementById('dependentes').value)||0;
+
+        const diasVendidos = 30 - diasFerias;
+        const proporcional = (salario / 30) * diasFerias * (meses / 12);
+        const terco        = proporcional / 3;
+        const abono        = diasVendidos > 0 ? (salario / 30) * diasVendidos : 0;
+        const totalBruto   = proporcional + terco + abono;
+
+        // INSS incide sobre férias + 1/3 (não sobre abono pecuniário)
+        const baseINSS = proporcional + terco;
+        const inss     = calcINSS(baseINSS);
+        const baseIRRF = baseINSS - inss;
+        const irrf     = calcIRRF(baseIRRF, dependentes);
+        const liquido  = totalBruto - inss - irrf;
+
+        document.getElementById('rProp').textContent   = fmt(proporcional);
+        document.getElementById('rTerco').textContent  = fmt(terco);
+        document.getElementById('rBruto').textContent  = fmt(totalBruto);
+        document.getElementById('rLiquido').textContent= fmt(liquido);
+        document.getElementById('t1').textContent  = fmt(proporcional);
+        document.getElementById('t2').textContent  = fmt(terco);
+        document.getElementById('t3').textContent  = abono > 0 ? fmt(abono) : 'Não se aplica';
+        document.getElementById('t4').textContent  = fmt(totalBruto);
+        document.getElementById('t5').textContent  = '- ' + fmt(inss);
+        document.getElementById('t6').textContent  = irrf > 0 ? '- ' + fmt(irrf) : 'Isento';
+        document.getElementById('tTotal').textContent = fmt(liquido);
+
+        const info = document.getElementById('infoBox');
+        const txt  = document.getElementById('infoTexto');
+        info.style.display = 'block';
+        if(meses < 12){
+            txt.innerHTML = `ℹ️ <strong>Férias proporcionais:</strong> Como você trabalhou ${meses} meses no período, o valor foi calculado proporcionalmente. O período aquisitivo completo são 12 meses.`;
+        } else if(diasVendidos > 0){
+            txt.innerHTML = `ℹ️ <strong>Abono pecuniário:</strong> Você optou por vender ${diasVendidos} dias de férias. O abono de ${fmt(abono)} é isento de INSS, mas pode sofrer IRRF dependendo da base de cálculo.`;
+        } else {
+            txt.innerHTML = `✅ <strong>Férias completas!</strong> Você terá direito a ${diasFerias} dias de descanso. Lembre de combinar o período com antecedência mínima de 30 dias.`;
+        }
+
+        document.getElementById('btnShare').style.display = 'inline-flex';
+    }
+
+    function compartilhar(){
+        const liq   = document.getElementById('rLiquido').textContent;
+        const bruto = document.getElementById('rBruto').textContent;
+        const texto = `🏖️ Calculei minhas férias no Zinha!\n\n💰 Total Bruto: ${bruto}\n✅ Líquido a Receber: ${liq}\n\nCalcule as suas: zinha.com.br/trabalho/ferias/`;
+        navigator.share ? navigator.share({title:'Minhas Férias',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>

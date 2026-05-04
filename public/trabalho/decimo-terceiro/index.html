@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de 13º Salário — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 850px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .header a:hover { text-decoration: underline; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #333; background: #fff; outline: none; transition: all 0.2s; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-width: 200px; }
+        .btn:hover { background: #1557b0; }
+        .btn:active { transform: scale(0.98); }
+        .btn-share { background: #25D366; color: white; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin: 1rem 0; }
+        .card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e8f0fe; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
+        .card-value { font-size: 20px; font-weight: bold; color: #1a73e8; }
+        .total-box { background: #e8f0fe; border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .total-row:last-child { border-bottom: none; }
+        .total-row.destaque { font-weight: bold; color: #1a73e8; font-size: 18px; border-top: 2px solid #fff; padding-top: 15px; margin-top: 5px; border-bottom: none; }
+        .parcelas-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 16px; }
+        .parcela-card { background: #f8f9ff; border-radius: 10px; padding: 14px; border: 1px solid #e8f0fe; text-align: center; }
+        .parcela-card h4 { font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+        .parcela-card .valor { font-size: 22px; font-weight: bold; color: #1a73e8; }
+        .parcela-card small { font-size: 11px; color: #888; display: block; margin-top: 4px; }
+        .info-box { background: #e8f0fe; border-left: 4px solid #1a73e8; border-radius: 8px; padding: 12px 16px; margin-top: 16px; font-size: 13px; color: #1a237e; line-height: 1.7; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎄 Calculadora de 13º Salário</h1>
+        <a href="/trabalho/">← Voltar</a>
+    </div>
+    <p class="subtitle">Calcule o valor do seu 13º salário proporcional com todos os descontos.</p>
+
+    <p class="section-title">Dados para o Cálculo</p>
+    <div class="row">
+        <div class="field">
+            <label>Salário Bruto (R$)</label>
+            <input type="number" id="salario" value="3000" min="0" step="100">
+        </div>
+        <div class="field">
+            <label>Meses Trabalhados no Ano</label>
+            <input type="number" id="meses" value="12" min="1" max="12">
+            <small>De 1 a 12 — conta fração ≥ 15 dias</small>
+        </div>
+        <div class="field">
+            <label>Adiantamento já Recebido (R$)</label>
+            <input type="number" id="adiantamento" value="0" min="0" step="100">
+            <small>Primeira parcela recebida em novembro</small>
+        </div>
+        <div class="field">
+            <label>Dependentes (IRRF)</label>
+            <input type="number" id="dependentes" value="0" min="0">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcular()">🧮 Calcular 13º Salário</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <p class="section-title">Resultado</p>
+    <div class="cards">
+        <div class="card"><div class="card-label">13º Bruto</div><div class="card-value" id="rBruto">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">Desconto INSS</div><div class="card-value" style="color:#c62828" id="rINSS">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">Desconto IRRF</div><div class="card-value" style="color:#c62828" id="rIRRF">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">13º Líquido Total</div><div class="card-value" style="color:#2e7d32" id="rLiquido">R$ 0,00</div></div>
+    </div>
+
+    <div class="total-box">
+        <div class="total-row"><span>Salário base</span><span id="t1">R$ 0,00</span></div>
+        <div class="total-row"><span>Meses trabalhados</span><span id="t2">—</span></div>
+        <div class="total-row"><span>13º Bruto Proporcional</span><span id="t3">R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto INSS (sobre 13º)</span><span id="t4" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row"><span>Desconto IRRF</span><span id="t5" style="color:#c62828">- R$ 0,00</span></div>
+        <div class="total-row"><span>Adiantamento já recebido</span><span id="t6">R$ 0,00</span></div>
+        <div class="total-row destaque"><span>2ª Parcela a Receber</span><span id="tTotal">R$ 0,00</span></div>
+    </div>
+
+    <div class="parcelas-box" id="parcelasBox" style="display:none">
+        <div class="parcela-card">
+            <h4>1ª Parcela</h4>
+            <div class="valor" id="p1Valor">R$ 0,00</div>
+            <small>Paga até 30 de novembro — sem desconto de IRRF</small>
+        </div>
+        <div class="parcela-card">
+            <h4>2ª Parcela</h4>
+            <div class="valor" id="p2Valor">R$ 0,00</div>
+            <small>Paga até 20 de dezembro — com INSS e IRRF</small>
+        </div>
+    </div>
+
+    <div class="info-box" id="infoBox" style="display:none">
+        <span id="infoTexto"></span>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ INSS calculado pela tabela progressiva 2025. IRRF incide apenas na 2ª parcela.<br>
+        A 1ª parcela (adiantamento) é paga entre fevereiro e novembro, sem desconto de IRRF.
+    </p>
+</div>
+<script>
+    function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    function calcINSS(base){
+        const faixas=[{ate:1518,aliq:0.075},{ate:2793.88,aliq:0.09},{ate:4190.83,aliq:0.12},{ate:8157.41,aliq:0.14}];
+        let inss=0,ant=0;
+        for(const f of faixas){
+            if(base<=ant)break;
+            inss+=(Math.min(base,f.ate)-ant)*f.aliq; ant=f.ate;
+            if(base<=f.ate)break;
+        }
+        return inss;
+    }
+
+    function calcIRRF(base,dep){
+        const bc=base-189.59*dep;
+        const f=[{ate:2259.20,a:0,d:0},{ate:2826.65,a:0.075,d:169.44},{ate:3751.05,a:0.15,d:381.44},{ate:4664.68,a:0.225,d:662.77},{ate:Infinity,a:0.275,d:896}];
+        for(const x of f)if(bc<=x.ate)return Math.max(0,bc*x.a-x.d);
+        return 0;
+    }
+
+    function calcular(){
+        const salario      = parseFloat(document.getElementById('salario').value)||0;
+        const meses        = Math.min(parseInt(document.getElementById('meses').value)||12, 12);
+        const adiantamento = parseFloat(document.getElementById('adiantamento').value)||0;
+        const dependentes  = parseInt(document.getElementById('dependentes').value)||0;
+
+        const bruto   = (salario/12)*meses;
+        const inss    = calcINSS(bruto);
+        const baseIRRF= bruto - inss;
+        const irrf    = calcIRRF(baseIRRF, dependentes);
+        const liquido = bruto - inss - irrf;
+
+        // Parcelas
+        const p1 = adiantamento > 0 ? adiantamento : bruto/2; // adiantamento = 1ª parcela
+        const p2 = Math.max(0, liquido - p1);
+
+        document.getElementById('rBruto').textContent  = fmt(bruto);
+        document.getElementById('rINSS').textContent   = fmt(inss);
+        document.getElementById('rIRRF').textContent   = irrf > 0 ? fmt(irrf) : 'Isento';
+        document.getElementById('rLiquido').textContent= fmt(liquido);
+
+        document.getElementById('t1').textContent = fmt(salario);
+        document.getElementById('t2').textContent = `${meses} mês${meses>1?'es':''}`;
+        document.getElementById('t3').textContent = fmt(bruto);
+        document.getElementById('t4').textContent = '- ' + fmt(inss);
+        document.getElementById('t5').textContent = irrf > 0 ? '- ' + fmt(irrf) : 'Isento';
+        document.getElementById('t6').textContent = adiantamento > 0 ? fmt(adiantamento) : 'Não informado';
+        document.getElementById('tTotal').textContent = fmt(p2);
+
+        document.getElementById('p1Valor').textContent = fmt(p1);
+        document.getElementById('p2Valor').textContent = fmt(p2);
+        document.getElementById('parcelasBox').style.display = 'grid';
+
+        const info = document.getElementById('infoBox');
+        info.style.display = 'block';
+        if(meses < 12){
+            document.getElementById('infoTexto').innerHTML = `ℹ️ <strong>13º proporcional:</strong> Como você trabalhou ${meses} meses, o valor é ${meses}/12 do salário. Frações ≥ 15 dias em um mês contam como mês inteiro.`;
+        } else {
+            document.getElementById('infoTexto').innerHTML = `✅ <strong>13º salário completo!</strong> Você trabalhou o ano todo e tem direito ao valor integral. O pagamento é obrigatório até o dia 20 de dezembro.`;
+        }
+
+        document.getElementById('btnShare').style.display = 'inline-flex';
+    }
+
+    function compartilhar(){
+        const liq   = document.getElementById('rLiquido').textContent;
+        const bruto = document.getElementById('rBruto').textContent;
+        const p2    = document.getElementById('tTotal').textContent;
+        const texto = `🎄 Calculei meu 13º salário no Zinha!\n\n💰 13º Bruto: ${bruto}\n✅ 13º Líquido: ${liq}\n📦 2ª Parcela a Receber: ${p2}\n\nCalcule o seu: zinha.com.br/trabalho/decimo-terceiro/`;
+        navigator.share ? navigator.share({title:'Meu 13º Salário',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>
