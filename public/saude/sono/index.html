@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sono — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 750px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-radius: 10px; overflow: hidden; border: 1px solid #c5d9f7; }
+        .tab { flex: 1; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: white; color: #888; transition: all 0.2s; text-align: center; }
+        .tab.ativo { background: #1a73e8; color: white; }
+        .tab:not(.ativo):hover { background: #e8f0fe; color: #1a73e8; }
+        .modo { display: none; }
+        .modo.ativo { display: block; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; }
+        .field input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+        .btn:hover { background: #1557b0; }
+        .btn-share { background: #25D366; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .resultado { display: none; }
+        .horarios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 1rem 0; }
+        .horario-card { border-radius: 12px; padding: 16px; text-align: center; border: 2px solid transparent; transition: all 0.2s; }
+        .horario-card.ideal { background: #e8f5e9; border-color: #43a047; }
+        .horario-card.bom { background: #e8f0fe; border-color: #1a73e8; }
+        .horario-card.ok { background: #fff8e1; border-color: #f9a825; }
+        .horario-card .hora { font-size: 26px; font-weight: bold; color: #333; }
+        .horario-card .ciclos { font-size: 12px; color: #666; margin-top: 4px; }
+        .horario-card .tag { font-size: 11px; font-weight: bold; margin-top: 6px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
+        .tag-ideal { background: #c8e6c9; color: #2e7d32; }
+        .tag-bom   { background: #e8eaf6; color: #3949ab; }
+        .tag-ok    { background: #fff9c4; color: #f57f17; }
+        .info-box { background: #e8f0fe; border-left: 4px solid #1a73e8; border-radius: 8px; padding: 14px 16px; margin-top: 16px; font-size: 13px; color: #1a237e; line-height: 1.7; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>😴 Calculadora de Sono</h1>
+        <a href="/saude/">← Voltar</a>
+    </div>
+    <p class="subtitle">Calcule os melhores horários para dormir ou acordar respeitando seus ciclos de sono.</p>
+
+    <div class="tabs">
+        <button class="tab ativo" id="tab-acordar" onclick="setModo('acordar')">⏰ Quero acordar às...</button>
+        <button class="tab" id="tab-dormir" onclick="setModo('dormir')">🛏️ Vou dormir às...</button>
+    </div>
+
+    <div class="modo ativo" id="modo-acordar">
+        <p class="section-title">Horário que precisa acordar</p>
+        <div class="row">
+            <div class="field">
+                <label>Horário para acordar</label>
+                <input type="time" id="acordar-hora" value="07:00">
+            </div>
+            <div class="field">
+                <label>Tempo para adormecer</label>
+                <select id="acordar-latencia">
+                    <option value="14">Rápido (~14 min)</option>
+                    <option value="20" selected>Normal (~20 min)</option>
+                    <option value="30">Demorado (~30 min)</option>
+                </select>
+                <small>Tempo médio até pegar no sono</small>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn" onclick="calcAcordar()">😴 Ver horários para dormir</button>
+            <button class="btn btn-share" id="shareAcordar" onclick="compartilhar('acordar')">📲 Compartilhar</button>
+        </div>
+        <div class="resultado" id="resAcordar" style="animation:fadeIn 0.4s">
+            <p class="section-title">Melhores horários para <strong>dormir</strong></p>
+            <p style="font-size:13px;color:#666;margin-bottom:12px">Cada ciclo de sono dura ~90 minutos. Acordar no fim de um ciclo = mais descansado.</p>
+            <div class="horarios-grid" id="gridAcordar"></div>
+            <div class="info-box" id="infoAcordar"></div>
+        </div>
+    </div>
+
+    <div class="modo" id="modo-dormir">
+        <p class="section-title">Horário que vai dormir</p>
+        <div class="row">
+            <div class="field">
+                <label>Horário para dormir</label>
+                <input type="time" id="dormir-hora" value="23:00">
+            </div>
+            <div class="field">
+                <label>Tempo para adormecer</label>
+                <select id="dormir-latencia">
+                    <option value="14">Rápido (~14 min)</option>
+                    <option value="20" selected>Normal (~20 min)</option>
+                    <option value="30">Demorado (~30 min)</option>
+                </select>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn" onclick="calcDormir()">⏰ Ver horários para acordar</button>
+            <button class="btn btn-share" id="shareDormir" onclick="compartilhar('dormir')">📲 Compartilhar</button>
+        </div>
+        <div class="resultado" id="resDormir" style="animation:fadeIn 0.4s">
+            <p class="section-title">Melhores horários para <strong>acordar</strong></p>
+            <p style="font-size:13px;color:#666;margin-bottom:12px">Cada ciclo de sono dura ~90 minutos. Acordar no fim de um ciclo = mais descansado.</p>
+            <div class="horarios-grid" id="gridDormir"></div>
+            <div class="info-box" id="infoDormir"></div>
+        </div>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ Cada ciclo de sono dura aproximadamente 90 minutos. A recomendação é de 5 a 6 ciclos (7,5h a 9h) por noite para adultos.<br>
+        Estes horários são sugestões — a qualidade do sono também depende de ambiente, rotina e saúde.
+    </p>
+</div>
+<script>
+    function setModo(m){
+        document.querySelectorAll('.modo').forEach(x=>x.classList.remove('ativo'));
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('ativo'));
+        document.getElementById('modo-'+m).classList.add('ativo');
+        document.getElementById('tab-'+m).classList.add('ativo');
+    }
+
+    function fmtHora(totalMin){
+        const h = Math.floor(((totalMin % 1440) + 1440) % 1440 / 60);
+        const m = ((totalMin % 1440) + 1440) % 1440 % 60;
+        return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    }
+
+    function parseMin(str){
+        const [h,m] = str.split(':').map(Number);
+        return h*60+m;
+    }
+
+    function renderCards(container, horarios, tipoTag){
+        container.innerHTML = '';
+        horarios.forEach((h,i)=>{
+            const cls  = i===0||i===1 ? 'ideal' : i===2||i===3 ? 'bom' : 'ok';
+            const tag  = i===0||i===1 ? '⭐ Ideal' : i===2||i===3 ? '👍 Bom' : '😐 Ok';
+            const tagCls = i<=1 ? 'tag-ideal' : i<=3 ? 'tag-bom' : 'tag-ok';
+            const ciclos = h.ciclos;
+            const horas  = (ciclos*90/60).toFixed(1).replace('.',',');
+            container.innerHTML += `
+                <div class="horario-card ${cls}">
+                    <div class="hora">${h.hora}</div>
+                    <div class="ciclos">${ciclos} ciclos · ${horas}h</div>
+                    <span class="tag ${tagCls}">${tag}</span>
+                </div>`;
+        });
+    }
+
+    function calcAcordar(){
+        const acordarMin = parseMin(document.getElementById('acordar-hora').value);
+        const latencia   = parseInt(document.getElementById('acordar-latencia').value)||20;
+        const horarios   = [];
+        for(let c=6; c>=2; c--){
+            const dormirMin = acordarMin - c*90 - latencia;
+            horarios.push({hora: fmtHora(dormirMin), ciclos: c});
+        }
+        renderCards(document.getElementById('gridAcordar'), horarios, 'dormir');
+        document.getElementById('infoAcordar').innerHTML =
+            `💡 <strong>Dica:</strong> Acorde às <strong>${document.getElementById('acordar-hora').value}</strong> dormindo nos horários destacados em verde. Prefira 5 ou 6 ciclos (7,5h a 9h) para acordar com mais energia.`;
+        document.getElementById('resAcordar').style.display = 'block';
+        document.getElementById('shareAcordar').style.display = 'inline-flex';
+    }
+
+    function calcDormir(){
+        const dormirMin = parseMin(document.getElementById('dormir-hora').value);
+        const latencia  = parseInt(document.getElementById('dormir-latencia').value)||20;
+        const horarios  = [];
+        for(let c=3; c<=7; c++){
+            const acordarMin = dormirMin + latencia + c*90;
+            horarios.push({hora: fmtHora(acordarMin), ciclos: c});
+        }
+        renderCards(document.getElementById('gridDormir'), horarios.reverse(), 'acordar');
+        document.getElementById('infoDormir').innerHTML =
+            `💡 <strong>Dica:</strong> Dormindo às <strong>${document.getElementById('dormir-hora').value}</strong>, prefira acordar nos horários verdes (5 ou 6 ciclos). Evite acordar no meio de um ciclo — você vai se sentir mais cansado do que se tivesse dormido menos!`;
+        document.getElementById('resDormir').style.display = 'block';
+        document.getElementById('shareDormir').style.display = 'inline-flex';
+    }
+
+    function compartilhar(modo){
+        const hora = modo==='acordar'
+            ? document.getElementById('acordar-hora').value
+            : document.getElementById('dormir-hora').value;
+        const t = `😴 Calculei meus ciclos de sono no Zinha!\n\n⏰ Horário ${modo==='acordar'?'para acordar':'para dormir'}: ${hora}\n\nCalcule os seus: zinha.com.br/saude/sono/`;
+        navigator.share ? navigator.share({title:'Meu Sono',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Gorjeta — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 700px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; }
+        .field input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .pct-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .pct-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #c5d9f7; background: white; color: #1a73e8; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .pct-btn.ativo, .pct-btn:hover { background: #1a73e8; color: white; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+        .btn:hover { background: #1557b0; }
+        .btn-share { background: #25D366; display: none; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 1rem 0; }
+        .card { background: #f8f9ff; border-radius: 10px; padding: 14px; border: 1px solid #e8f0fe; text-align: center; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .card-value { font-size: 22px; font-weight: bold; color: #1a73e8; }
+        .destaque { font-size: 28px !important; color: #2e7d32 !important; }
+        .total-box { background: #e8f0fe; border-radius: 12px; padding: 16px 20px; margin-top: 4px; }
+        .total-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 15px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .total-row:last-child { border-bottom: none; font-weight: bold; color: #1a73e8; font-size: 17px; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🍽️ Calculadora de Gorjeta</h1>
+        <a href="/utilitarios/">← Voltar</a>
+    </div>
+    <p class="subtitle">Divida a conta e calcule quanto cada pessoa paga, com ou sem gorjeta.</p>
+
+    <p class="section-title">Dados da Conta</p>
+    <div class="row">
+        <div class="field">
+            <label>Valor da Conta (R$)</label>
+            <input type="text" id="conta" placeholder="Ex: 150,00" inputmode="decimal" oninput="maskDecimal(this); calcular()">
+        </div>
+        <div class="field">
+            <label>Número de Pessoas</label>
+            <input type="number" id="pessoas" value="4" min="1" max="100" oninput="calcular()">
+        </div>
+    </div>
+
+    <p class="section-title">Gorjeta</p>
+    <div class="pct-btns" id="pctBtns">
+        <button class="pct-btn" onclick="setPct(0)">Sem gorjeta</button>
+        <button class="pct-btn" onclick="setPct(5)">5%</button>
+        <button class="pct-btn" onclick="setPct(10)">10% (padrão BR)</button>
+        <button class="pct-btn ativo" onclick="setPct(15)">15%</button>
+        <button class="pct-btn" onclick="setPct(20)">20%</button>
+    </div>
+    <div class="field" style="margin-bottom:15px">
+        <label>Ou informe um % personalizado</label>
+        <input type="number" id="gorjetaPct" value="15" min="0" max="100" step="1" oninput="calcular()">
+    </div>
+
+    <p class="section-title">Resultado</p>
+    <div class="cards">
+        <div class="card"><div class="card-label">Valor da Gorjeta</div><div class="card-value" id="rGorjeta">R$ 0,00</div></div>
+        <div class="card"><div class="card-label">Total com Gorjeta</div><div class="card-value" id="rTotal">R$ 0,00</div></div>
+        <div class="card"><div class="card-label" id="labelPorPessoa">Por pessoa</div><div class="card-value destaque" id="rPorPessoa">R$ 0,00</div></div>
+    </div>
+
+    <div class="total-box">
+        <div class="total-row"><span>Conta original</span><span id="t1">R$ 0,00</span></div>
+        <div class="total-row"><span>Gorjeta (<span id="tPct">15</span>%)</span><span id="t2">R$ 0,00</span></div>
+        <div class="total-row"><span>Total</span><span id="t3">R$ 0,00</span></div>
+        <div class="total-row"><span>÷ <span id="tPessoas">4</span> pessoas</span><span id="t4">R$ 0,00 cada</span></div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-share" id="btnShare" style="display:inline-flex" onclick="compartilhar()">📲 Compartilhar com o grupo</button>
+    </div>
+
+    <p class="footer-note">A gorjeta no Brasil é sempre voluntária — 10% é o valor sugerido por convenção.</p>
+</div>
+<script>
+    function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    function parseNumeroPTBR(valor){
+        if(!valor) return 0;
+        return parseFloat(valor.replace(/\./g,'').replace(',', '.')) || 0;
+    }
+
+    function maskDecimal(input){
+        let valor = input.value.replace(/[^\d,]/g, '');
+        const partes = valor.split(',');
+        partes[0] = partes[0].replace(/^0+(\d)/, '$1');
+        if(partes.length > 1){
+            partes[1] = partes[1].slice(0,2);
+            valor = partes[0] + ',' + partes[1];
+        } else {
+            valor = partes[0];
+        }
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+        input.value = valor;
+    }
+
+    function setPct(v){
+        document.getElementById('gorjetaPct').value = v;
+        document.querySelectorAll('.pct-btn').forEach(b=>{
+            b.classList.toggle('ativo', b.textContent.startsWith(v===0?'Sem':String(v)+'%'));
+        });
+        calcular();
+    }
+
+    function calcular(){
+        const conta   = parseNumeroPTBR(document.getElementById('conta').value)||0;
+        const pessoas = parseInt(document.getElementById('pessoas').value)||1;
+        const pct     = parseFloat(document.getElementById('gorjetaPct').value)||0;
+
+        const gorjeta = conta * pct / 100;
+        const total   = conta + gorjeta;
+        const porPess = total / pessoas;
+
+        document.getElementById('rGorjeta').textContent  = fmt(gorjeta);
+        document.getElementById('rTotal').textContent    = fmt(total);
+        document.getElementById('rPorPessoa').textContent= fmt(porPess);
+        document.getElementById('t1').textContent        = fmt(conta);
+        document.getElementById('t2').textContent        = fmt(gorjeta);
+        document.getElementById('t3').textContent        = fmt(total);
+        document.getElementById('t4').textContent        = fmt(porPess) + ' cada';
+        document.getElementById('tPct').textContent      = pct;
+        document.getElementById('tPessoas').textContent  = pessoas;
+        document.getElementById('labelPorPessoa').textContent = `Por pessoa (${pessoas}x)`;
+    }
+
+    function compartilhar(){
+        const pp  = document.getElementById('rPorPessoa').textContent;
+        const tot = document.getElementById('rTotal').textContent;
+        const pct = document.getElementById('gorjetaPct').value;
+        const p   = document.getElementById('pessoas').value;
+        const t = `🍽️ Calculei a conta no Zinha!\n\nTotal com gorjeta (${pct}%): ${tot}\n💳 Cada um paga: ${pp} (${p} pessoas)\n\nCalcule a sua: zinha.com.br/utilitarios/gorjeta/`;
+        navigator.share ? navigator.share({title:'Divisão da Conta',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado! Cole no grupo do WhatsApp.'));
+    }
+
+    calcular();
+</script>
+</body>
+</html>

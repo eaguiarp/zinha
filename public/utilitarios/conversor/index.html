@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Medidas — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .categorias { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .cat-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #c5d9f7; background: white; color: #1a73e8; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .cat-btn.ativo, .cat-btn:hover { background: #1a73e8; color: white; border-color: #1a73e8; }
+        .conversor-box { background: #f8f9ff; border-radius: 12px; padding: 20px; }
+        .conv-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 12px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 12px; color: #555; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .field input, .field select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; transition: all 0.2s; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .swap-btn { background: #e8f0fe; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-bottom: 2px; }
+        .swap-btn:hover { background: #1a73e8; color: white; transform: rotate(180deg); }
+        .resultado-inline { background: #e8f0fe; border-radius: 10px; padding: 16px; text-align: center; font-size: 22px; font-weight: bold; color: #1a73e8; margin-top: 8px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        .referencia { margin-top: 20px; }
+        .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-top: 8px; }
+        .ref-item { background: #f8f9ff; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #555; border: 1px solid #e8f0fe; }
+        .ref-item strong { color: #1a73e8; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔄 Conversor de Medidas</h1>
+        <a href="/utilitarios/">← Voltar</a>
+    </div>
+    <p class="subtitle">Converta unidades de peso, distância, temperatura, volume e mais.</p>
+
+    <div class="categorias" id="categorias"></div>
+
+    <div class="conversor-box">
+        <div class="conv-row">
+            <div class="field">
+                <label id="labelDe">De</label>
+                <select id="unidaDe" onchange="converter()"></select>
+            </div>
+            <button class="swap-btn" onclick="trocar()" title="Inverter">⇄</button>
+            <div class="field">
+                <label id="labelPara">Para</label>
+                <select id="unidaPara" onchange="converter()"></select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Valor</label>
+            <input type="text" id="valorDe" placeholder="Digite o valor..." inputmode="decimal" oninput="maskDecimal(this); converter()">
+        </div>
+        <div class="resultado-inline" id="resultado">—</div>
+    </div>
+
+    <div class="referencia" id="referencia"></div>
+
+    <p class="footer-note">Conversões baseadas em valores padrão internacionais.</p>
+</div>
+<script>
+const categorias = {
+    '⚖️ Peso': {
+        unidades: ['kg','g','lb','oz','t (tonelada)'],
+        base: 'kg',
+        para_base: { 'kg':1, 'g':0.001, 'lb':0.453592, 'oz':0.0283495, 't (tonelada)':1000 },
+        refs: ['1 kg = 2,205 lb','1 lb = 453,6 g','1 oz = 28,35 g','1 t = 1.000 kg']
+    },
+    '📏 Comprimento': {
+        unidades: ['m','km','cm','mm','mi (milha)','ft (pé)','in (polegada)','yd (jarda)'],
+        base: 'm',
+        para_base: { 'm':1,'km':1000,'cm':0.01,'mm':0.001,'mi (milha)':1609.34,'ft (pé)':0.3048,'in (polegada)':0.0254,'yd (jarda)':0.9144 },
+        refs: ['1 km = 0,621 mi','1 mi = 1,609 km','1 ft = 30,48 cm','1 in = 2,54 cm']
+    },
+    '🌡️ Temperatura': {
+        unidades: ['°C','°F','K'],
+        base: '°C',
+        especial: true,
+        refs: ['0°C = 32°F = 273,15K','100°C = 212°F','-40°C = -40°F','37°C = 98,6°F (corpo humano)']
+    },
+    '🧪 Volume': {
+        unidades: ['L','mL','m³','ft³','gal (US)','oz fl (US)','xícara (US)'],
+        base: 'L',
+        para_base: { 'L':1,'mL':0.001,'m³':1000,'ft³':28.3168,'gal (US)':3.78541,'oz fl (US)':0.0295735,'xícara (US)':0.236588 },
+        refs: ['1 L = 1.000 mL','1 gal = 3,785 L','1 xícara = 240 mL','1 ft³ = 28,32 L']
+    },
+    '⚡ Velocidade': {
+        unidades: ['km/h','m/s','mph','nó'],
+        base: 'km/h',
+        para_base: { 'km/h':1,'m/s':3.6,'mph':1.60934,'nó':1.852 },
+        refs: ['1 m/s = 3,6 km/h','1 mph = 1,609 km/h','1 nó = 1,852 km/h','100 km/h = 62,1 mph']
+    },
+    '📐 Área': {
+        unidades: ['m²','km²','cm²','ha','ft²','ac (acre)'],
+        base: 'm²',
+        para_base: { 'm²':1,'km²':1e6,'cm²':0.0001,'ha':10000,'ft²':0.092903,'ac (acre)':4046.86 },
+        refs: ['1 ha = 10.000 m²','1 km² = 100 ha','1 acre = 0,405 ha','1 ft² = 929 cm²']
+    }
+};
+
+let catAtual = Object.keys(categorias)[0];
+
+function renderCategorias(){
+    const el = document.getElementById('categorias');
+    el.innerHTML = Object.keys(categorias).map(c =>
+        `<button class="cat-btn ${c===catAtual?'ativo':''}" onclick="setCategoria('${c}')">${c}</button>`
+    ).join('');
+}
+
+function parseNumeroPTBR(valor){
+    if(!valor) return 0;
+    return parseFloat(valor.replace(/\./g,'').replace(',', '.')) || 0;
+}
+
+    function setCategoria(cat){
+    catAtual = cat;
+    renderCategorias();
+    const data = categorias[cat];
+    const de   = document.getElementById('unidaDe');
+    const para = document.getElementById('unidaPara');
+    de.innerHTML   = data.unidades.map(u=>`<option>${u}</option>`).join('');
+    para.innerHTML = data.unidades.map((u,i)=>`<option ${i===1?'selected':''}>${u}</option>`).join('');
+    document.getElementById('resultado').textContent = '—';
+    document.getElementById('referencia').innerHTML = renderRefs(data.refs);
+    converter();
+}
+
+    function maskDecimal(input){
+        let valor = input.value.replace(/[^\d,]/g, '');
+        const partes = valor.split(',');
+        partes[0] = partes[0].replace(/^0+(\d)/, '$1');
+        if(partes.length > 1){
+            partes[1] = partes[1].slice(0,2);
+            valor = partes[0] + ',' + partes[1];
+        } else {
+            valor = partes[0];
+        }
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+        input.value = valor;
+    }
+
+function renderRefs(refs){
+    return `<p class="section-title">Referências rápidas</p><div class="ref-grid">${
+        refs.map(r=>`<div class="ref-item">${r}</div>`).join('')
+    }</div>`;
+}
+
+function converter(){
+    const val  = parseNumeroPTBR(document.getElementById('valorDe').value);
+    const de   = document.getElementById('unidaDe').value;
+    const para = document.getElementById('unidaPara').value;
+    const data = categorias[catAtual];
+    if(isNaN(val)){ document.getElementById('resultado').textContent='—'; return; }
+    if(de===para){ document.getElementById('resultado').textContent = val + ' ' + de; return; }
+
+    let resultado;
+    if(data.especial){ // temperatura
+        let celsius;
+        if(de==='°C') celsius=val;
+        else if(de==='°F') celsius=(val-32)/1.8;
+        else celsius=val-273.15;
+        if(para==='°C') resultado=celsius;
+        else if(para==='°F') resultado=celsius*1.8+32;
+        else resultado=celsius+273.15;
+    } else {
+        const emBase = val * data.para_base[de];
+        resultado = emBase / data.para_base[para];
+    }
+
+    const fmt = resultado >= 0.001 && resultado < 1e7
+        ? parseFloat(resultado.toPrecision(6)).toLocaleString('pt-BR')
+        : resultado.toExponential(4);
+    document.getElementById('resultado').textContent = `${val} ${de} = ${fmt} ${para}`;
+}
+
+function trocar(){
+    const de   = document.getElementById('unidaDe');
+    const para = document.getElementById('unidaPara');
+    const tmp  = de.value;
+    de.value   = para.value;
+    para.value = tmp;
+    converter();
+}
+
+setCategoria(catAtual);
+</script>
+</body>
+</html>

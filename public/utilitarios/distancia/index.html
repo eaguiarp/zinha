@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distância entre Cidades — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 780px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; width: 100%; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .swap-btn { background: #e8f0fe; border: none; border-radius: 50%; width: 42px; height: 42px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-bottom:2px; flex-shrink:0; }
+        .swap-btn:hover { background: #1a73e8; color: white; }
+        .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 15px; margin-bottom: 15px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+        .btn:hover { background: #1557b0; }
+        .btn-share { background: #25D366; display: none; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; margin: 1rem 0; }
+        .card { background: #f8f9ff; border-radius: 10px; padding: 14px; border: 1px solid #e8f0fe; text-align: center; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .card-value { font-size: 19px; font-weight: bold; color: #1a73e8; }
+        .custos-box { background: #e8f0fe; border-radius: 12px; padding: 16px 20px; margin-top: 4px; }
+        .custo-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 14px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .custo-row:last-child { border-bottom: none; }
+        .aviso-box { background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: 13px; color: #555; line-height: 1.6; }
+        .sugestoes { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .sug { background: #e8f0fe; color: #1a73e8; border: none; border-radius: 16px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+        .sug:hover { background: #1a73e8; color: white; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; text-align: center; line-height: 1.6; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📍 Distância entre Cidades</h1>
+        <a href="/utilitarios/">← Voltar</a>
+    </div>
+    <p class="subtitle">Estime a distância em linha reta e o custo aproximado da viagem de carro.</p>
+
+    <p class="section-title">Origem e Destino</p>
+    <div class="row">
+        <div class="field">
+            <label>Cidade de Origem</label>
+            <input type="text" id="cidadeA" placeholder="Ex: São Paulo" list="cidades-lista" oninput="limparResultado()">
+        </div>
+        <button class="swap-btn" onclick="trocar()" title="Inverter">⇄</button>
+        <div class="field">
+            <label>Cidade de Destino</label>
+            <input type="text" id="cidadeB" placeholder="Ex: Rio de Janeiro" list="cidades-lista" oninput="limparResultado()">
+        </div>
+    </div>
+    <datalist id="cidades-lista"></datalist>
+
+    <p style="font-size:12px;color:#888;margin-bottom:10px">Rotas populares:</p>
+    <div class="sugestoes">
+        <button class="sug" onclick="setSug('São Paulo','Rio de Janeiro')">SP → RJ</button>
+        <button class="sug" onclick="setSug('Brasília','São Paulo')">BSB → SP</button>
+        <button class="sug" onclick="setSug('Belo Horizonte','Rio de Janeiro')">BH → RJ</button>
+        <button class="sug" onclick="setSug('Curitiba','São Paulo')">CWB → SP</button>
+        <button class="sug" onclick="setSug('Salvador','Recife')">SSA → REC</button>
+        <button class="sug" onclick="setSug('Porto Alegre','São Paulo')">POA → SP</button>
+        <button class="sug" onclick="setSug('Manaus','Belém')">MAO → BEL</button>
+        <button class="sug" onclick="setSug('Fortaleza','Natal')">FOR → NAT</button>
+    </div>
+
+    <p class="section-title" style="margin-top:1.5rem">Dados do Veículo</p>
+    <div class="row2">
+        <div class="field">
+            <label>Consumo do carro (km/L)</label>
+            <input type="text" id="consumo" value="12,0" inputmode="decimal" oninput="maskDecimal(this)" onblur="fixDecimal(this)">
+        </div>
+        <div class="field">
+            <label>Preço do combustível (R$/L)</label>
+            <input type="text" id="precoComb" value="6,20" inputmode="decimal" oninput="maskDecimal(this)" onblur="fixDecimal(this)">
+        </div>
+        <div class="field">
+            <label>Número de passageiros</label>
+            <input type="number" id="passageiros" value="2" min="1" max="9">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcular()">📍 Calcular Distância</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <div id="resultado" style="display:none;animation:fadeIn 0.4s">
+        <p class="section-title">Resultado</p>
+        <div class="cards">
+            <div class="card"><div class="card-label">Distância em linha reta</div><div class="card-value" id="rKm">—</div></div>
+            <div class="card"><div class="card-label">Estimativa de rota</div><div class="card-value" id="rRota">—</div></div>
+            <div class="card"><div class="card-label">Tempo estimado</div><div class="card-value" id="rTempo">—</div></div>
+            <div class="card"><div class="card-label">Custo por pessoa</div><div class="card-value" id="rPorPessoa" style="color:#2e7d32">—</div></div>
+        </div>
+        <div class="custos-box">
+            <div class="custo-row"><span>Distância estimada de rota</span><span id="c1">—</span></div>
+            <div class="custo-row"><span>Combustível necessário</span><span id="c2">—</span></div>
+            <div class="custo-row"><span>Custo total de combustível</span><span id="c3">—</span></div>
+            <div class="custo-row"><span>Passageiros</span><span id="c4">—</span></div>
+            <div class="custo-row"><span><strong>Custo por pessoa</strong></span><span id="c5" style="color:#1a73e8;font-weight:bold">—</span></div>
+        </div>
+        <div class="aviso-box" id="avisoBox"></div>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ A distância calculada é em linha reta (coordenadas geográficas). A estimativa de rota aplica um fator de correção de 1,3x (rodovias raramente são retas).<br>
+        Para rotas exatas, use Google Maps ou Waze. Pedágios não estão incluídos.
+    </p>
+</div>
+<script>
+// Coordenadas das principais cidades brasileiras
+const cidades = {
+    'São Paulo': [-23.5505,-46.6333],
+    'Rio de Janeiro': [-22.9068,-43.1729],
+    'Brasília': [-15.7801,-47.9292],
+    'Salvador': [-12.9714,-38.5014],
+    'Fortaleza': [-3.7172,-38.5433],
+    'Belo Horizonte': [-19.9167,-43.9345],
+    'Manaus': [-3.1190,-60.0217],
+    'Curitiba': [-25.4284,-49.2733],
+    'Recife': [-8.0476,-34.8770],
+    'Porto Alegre': [-30.0346,-51.2177],
+    'Belém': [-1.4558,-48.4902],
+    'Goiânia': [-16.6869,-49.2648],
+    'Florianópolis': [-27.5954,-48.5480],
+    'Maceió': [-9.6658,-35.7350],
+    'Natal': [-5.7945,-35.2110],
+    'Teresina': [-5.0920,-42.8038],
+    'Campo Grande': [-20.4697,-54.6201],
+    'João Pessoa': [-7.1195,-34.8450],
+    'Aracaju': [-10.9472,-37.0731],
+    'Porto Velho': [-8.7612,-63.9004],
+    'Macapá': [0.0349,-51.0694],
+    'Boa Vista': [2.8235,-60.6758],
+    'Rio Branco': [-9.9754,-67.8249],
+    'Palmas': [-10.1689,-48.3317],
+    'Cuiabá': [-15.5989,-56.0949],
+    'São Luís': [-2.5307,-44.3068],
+    'Vitória': [-20.3155,-40.3128],
+    'Campinas': [-22.9056,-47.0608],
+    'Ribeirão Preto': [-21.1704,-47.8100],
+    'Santos': [-23.9607,-46.3342],
+    'São José dos Campos': [-23.1794,-45.8869],
+    'Uberlândia': [-18.9186,-48.2772],
+    'Sorocaba': [-23.5015,-47.4526],
+    'Contagem': [-19.9317,-44.0536],
+    'Juiz de Fora': [-21.7642,-43.3503],
+    'Feira de Santana': [-12.2664,-38.9663],
+    'Joinville': [-26.3045,-48.8487],
+    'Londrina': [-23.3045,-51.1696],
+    'Maringá': [-23.4205,-51.9333],
+    'Ananindeua': [-1.3658,-48.3725],
+    'Niterói': [-22.8833,-43.1036],
+    'Duque de Caxias': [-22.7856,-43.3117],
+    'Nova Iguaçu': [-22.7556,-43.4514],
+    'São Gonçalo': [-22.8268,-43.0539],
+};
+
+// Popular datalist
+const dl = document.getElementById('cidades-lista');
+Object.keys(cidades).forEach(c=>{ const opt=document.createElement('option'); opt.value=c; dl.appendChild(opt); });
+
+function setSug(a,b){
+    document.getElementById('cidadeA').value=a;
+    document.getElementById('cidadeB').value=b;
+    calcular();
+}
+
+function trocar(){
+    const a=document.getElementById('cidadeA').value;
+    document.getElementById('cidadeA').value=document.getElementById('cidadeB').value;
+    document.getElementById('cidadeB').value=a;
+    limparResultado();
+}
+
+function limparResultado(){
+    document.getElementById('resultado').style.display='none';
+}
+
+function haversine(lat1,lon1,lat2,lon2){
+    const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function fmt(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+function parseNumeroPTBR(valor){
+    if(!valor) return 0;
+    return parseFloat(valor.replace(/\./g,'').replace(',', '.')) || 0;
+}
+
+function maskDecimal(input){
+    let valor = input.value.replace(/[^\d,]/g, '');
+    const partes = valor.split(',');
+    partes[0] = partes[0].replace(/^0+(\d)/, '$1');
+    if(partes.length > 1){
+        partes[1] = partes[1].slice(0,2);
+        valor = partes[0] + ',' + partes[1];
+    } else {
+        valor = partes[0];
+    }
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    input.value = valor;
+}
+
+function fixDecimal(input){
+    if(!input.value) return;
+    if(input.value.includes(',')) return;
+    input.value = input.value + ',0';
+}
+
+function calcular(){
+    const nA = document.getElementById('cidadeA').value.trim();
+    const nB = document.getElementById('cidadeB').value.trim();
+    const consumo = parseNumeroPTBR(document.getElementById('consumo').value)||12;
+    const preco   = parseNumeroPTBR(document.getElementById('precoComb').value)||6.2;
+    const pass    = parseInt(document.getElementById('passageiros').value)||1;
+
+    const cA = cidades[nA];
+    const cB = cidades[nB];
+    if(!cA||!cB){
+        alert(`Cidade não encontrada na base. Tente uma das sugestões ou verifique a grafia.\n\nCidades não encontradas: ${!cA?nA:''}${!cA&&!cB?' e ':''}${!cB?nB:''}`);
+        return;
+    }
+    if(nA===nB){ alert('Selecione cidades diferentes.'); return; }
+
+    const distLinha  = haversine(cA[0],cA[1],cB[0],cB[1]);
+    const distRota   = distLinha * 1.3; // fator de correção rodovia
+    const litros     = distRota / consumo;
+    const custoTotal = litros * preco;
+    const porPessoa  = custoTotal / pass;
+    const velocMedia = 80; // km/h média BR
+    const minutos    = distRota / velocMedia * 60;
+    const horas      = Math.floor(minutos/60);
+    const mins       = Math.round(minutos%60);
+
+    document.getElementById('rKm').textContent       = Math.round(distLinha) + ' km';
+    document.getElementById('rRota').textContent     = '~' + Math.round(distRota) + ' km';
+    document.getElementById('rTempo').textContent    = horas + 'h' + (mins>0?mins+'min':'');
+    document.getElementById('rPorPessoa').textContent= fmt(porPessoa);
+    document.getElementById('c1').textContent        = '~' + Math.round(distRota) + ' km';
+    document.getElementById('c2').textContent        = litros.toFixed(1) + ' L';
+    document.getElementById('c3').textContent        = fmt(custoTotal);
+    document.getElementById('c4').textContent        = pass + ' pessoa' + (pass>1?'s':'');
+    document.getElementById('c5').textContent        = fmt(porPessoa);
+
+    const aviso = document.getElementById('avisoBox');
+    aviso.innerHTML = `ℹ️ <strong>Atenção:</strong> Esta é uma estimativa baseada em linha reta com fator de correção de 1,3x. A distância real pode variar conforme o trajeto, desvios e condições da estrada. Pedágios não estão incluídos. Para o trajeto exato, use <strong>Google Maps</strong> ou <strong>Waze</strong>.`;
+
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('btnShare').style.display  = 'inline-flex';
+}
+
+function compartilhar(){
+    const a    = document.getElementById('cidadeA').value;
+    const b    = document.getElementById('cidadeB').value;
+    const km   = document.getElementById('rRota').textContent;
+    const pp   = document.getElementById('rPorPessoa').textContent;
+    const tempo= document.getElementById('rTempo').textContent;
+    const t = `📍 Calculei a distância no Zinha!\n\n🗺️ ${a} → ${b}\n🚗 Distância estimada: ${km}\n⏱️ Tempo estimado: ${tempo}\n💰 Custo por pessoa: ${pp}\n\nCalcule a sua: zinha.com.br/utilitarios/distancia/`;
+    navigator.share ? navigator.share({title:'Distância entre Cidades',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
+}
+</script>
+</body>
+</html>

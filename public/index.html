@@ -7,7 +7,6 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; text-align: center; padding: 30px 20px; }
         h1 { color: #1a73e8; margin-bottom: 10px; }
-        .subtitle { color: #666; margin-bottom: 30px; font-size: 15px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
         .card:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
@@ -17,90 +16,24 @@
         .badge-trabalhista { background: #e8f0fe; color: #1a73e8; }
         .badge-saude       { background: #e6f4ea; color: #2e7d32; }
         .badge-financas    { background: #fff3e0; color: #e65100; }
-        .badge-rh          { background: #fce4ec; color: #c2185b; }
+        .badge-util        { background: #ede7f6; color: #512da8; }
         .icon { font-size: 28px; margin-bottom: 6px; }
-    </style>
-    <style>
-        .hero-container {
-    display: flex;
-    justify-content: center;
-    padding: 40px 20px;
-    background-color: #ffffff;
-    margin-bottom: 50px;
-    border-bottom: 2px solid #ffffff;
-}
-        .hero-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    max-width: 1100px;
-    width: 100%;
-    gap: 40px;
-}
-
-       .quadro-negro {
-    background-color: #1b3d2f;
-    border: 4px solid #5d4037;
-    border-radius: 6px;
-    padding: 20px;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-
-        .fonte-giz {
-            color: #ffffff;
-            font-family: 'Architects Daughter', cursive;
-            font-size: 1.1rem;
-            line-height: 1.5;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            margin: 0;
-        }
-
-        .hero-text {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            flex: 1;
-            max-width: 500px;
-        }
-
+        .hero-container { display: flex; justify-content: center; padding: 40px 20px; background-color: #ffffff; margin-bottom: 50px; border-bottom: 2px solid #f0f2f5; }
+        .hero-content { display: flex; align-items: center; justify-content: center; max-width: 1100px; width: 100%; gap: 40px; }
+        .quadro-negro { background-color: #1b3d2f; border: 4px solid #5d4037; border-radius: 6px; padding: 20px; min-height: 80px; display: flex; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        .fonte-giz { color: #ffffff; font-family: 'Architects Daughter', cursive; font-size: 1.1rem; line-height: 1.5; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); margin: 0; }
+        .hero-text { display: flex; flex-direction: column; gap: 15px; flex: 1; max-width: 500px; }
         .hero-text h1 { margin: 0; font-size: 28px; }
-
-        .seo-description {
-            color: #555;
-            font-size: 13px;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-       .hero-image img {
-    max-width: 180px;
-    height: auto;
-    display: block;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
-}
-
-        /* Responsividade para Tablet */
-        @media (max-width: 1024px) {
-            .hero-content { gap: 30px; }
-            .grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-        }
-
-        /* Responsividade para Celular */
+        .seo-description { color: #555; font-size: 13px; line-height: 1.6; margin: 0; }
+        .hero-image img { max-width: 180px; height: auto; display: block; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1)); }
         @media (max-width: 768px) {
             body { padding: 20px 15px; }
             .hero-container { padding: 30px 15px; margin-bottom: 35px; }
-            .hero-content {
-                flex-direction: column;
-                gap: 25px;
-                max-width: 100%;
-            }
+            .hero-content { flex-direction: column; gap: 25px; }
             .hero-text { max-width: 100%; }
             .hero-text h1 { font-size: 24px; }
             .hero-image img { max-width: 160px; }
-            .quadro-negro { max-width: 100%; min-height: auto; }
+            .quadro-negro { min-height: auto; }
             .fonte-giz { font-size: 1rem; }
             .grid { grid-template-columns: 1fr; gap: 18px; }
             .card { padding: 20px; }
@@ -112,52 +45,55 @@
 </head>
 <body>
 
-    <!-- Seção Hero: Zinha e o Quadro Negro -->
 <section class="hero-container">
     <div class="hero-content">
-        <!-- A Persona: Homenagem e Autoridade -->
         <div class="hero-image">
-            <img src="IMG/zinha-persona.webp" alt="Zinha - Sua Assistente de Cálculos Exatos">
+            <img src="/img/zinha-persona.webp" alt="Zinha - Sua Assistente de Cálculos Exatos">
         </div>
-
-        <!-- O Quadro de Giz Dinâmico -->
         <div class="hero-text">
             <h1>Zinha ajuda você!</h1>
             <div class="quadro-negro">
                 <p id="mensagem-giz" class="fonte-giz"></p>
             </div>
             <p class="seo-description">
-                Sua central de <strong>cálculos exatos</strong> para trabalho, finanças e saúde. 
-                Simule férias, rescisão e FGTS com precisão.
+                Sua central de <strong>cálculos exatos</strong> para trabalho, finanças e saúde.
+                Simule férias, rescisão, FGTS, IMC e muito mais.
             </p>
         </div>
     </div>
 </section>
 
-    <div class="grid">
+<div class="grid">
 
-        <a href="/trabalho/" class="card">
-            <div class="icon">⚖️</div>
-            <span class="badge badge-trabalhista">Trabalho & Direitos</span>
-            <h3>Direitos Trabalhistas</h3>
-            <p>Calcule horas extras, rescisão, férias, 13º e FGTS em um só lugar.</p>
-        </a>
+    <a href="/trabalho/" class="card">
+        <div class="icon">⚖️</div>
+        <span class="badge badge-trabalhista">Trabalho & Direitos</span>
+        <h3>Direitos Trabalhistas</h3>
+        <p>Calcule horas extras, rescisão, férias, 13º e FGTS em um só lugar.</p>
+    </a>
 
-        <a href="/imc/" class="card">
-            <div class="icon">⚖️</div>
-            <span class="badge badge-saude">Saúde</span>
-            <h3>Calculadora de IMC</h3>
-            <p>Descubra se você está no seu peso ideal.</p>
-        </a>
+    <a href="/saude/" class="card">
+        <div class="icon">💚</div>
+        <span class="badge badge-saude">Saúde</span>
+        <h3>Saúde & Bem-estar</h3>
+        <p>IMC, hidratação ideal, gasto calórico e ciclos de sono — cuide melhor de você.</p>
+    </a>
 
-        <a href="/financas/" class="card">
-            <div class="icon">💰</div>
-            <span class="badge badge-financas">Finanças</span>
-            <h3>Finanças Pessoais</h3>
-            <p>Financiamento, investimentos e FGTS — simule antes de decidir.</p>
-        </a>
+    <a href="/financas/" class="card">
+        <div class="icon">💰</div>
+        <span class="badge badge-financas">Finanças</span>
+        <h3>Finanças Pessoais</h3>
+        <p>Financiamentos e investimentos— simule antes de decidir.</p>
+    </a>
 
-    </div>
+    <a href="/utilitarios/" class="card">
+        <div class="icon">🛠️</div>
+        <span class="badge badge-util">Utilitários</span>
+        <h3>Ferramentas do Dia a Dia</h3>
+        <p>Conversor de medidas, prazos, gorjeta e distância entre cidades.</p>
+    </a>
+
+</div>
 
 <script>
     const mensagensZinha = [
@@ -165,17 +101,14 @@
         "Sabia que o cálculo do FGTS mudou em 2026? Já atualizei!",
         "Férias chegando? Calcule seu líquido agora mesmo.",
         "Não se perca nos juros. Deixa que eu faço a conta para você!",
-        "Calculadora de Salário Líquido 2026? Está na mão!"
+        "Qual a sua hidratação ideal hoje? Vem calcular!",
+        "Quer saber o melhor horário para acordar? Tenho a resposta!",
+        "Calculadora de 13º Salário 2026? Está na mão!"
     ];
-
-    function sortearMensagem() {
-        const elemento = document.getElementById('mensagem-giz');
-        const indice = Math.floor(Math.random() * mensagensZinha.length);
-        elemento.innerText = mensagensZinha[indice];
-    }
-
-    // Executa ao carregar a página
-    window.onload = sortearMensagem;
+    window.onload = function(){
+        document.getElementById('mensagem-giz').innerText =
+            mensagensZinha[Math.floor(Math.random() * mensagensZinha.length)];
+    };
 </script>
 </body>
 </html>

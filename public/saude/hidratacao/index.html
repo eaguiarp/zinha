@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Hidratação — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 750px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; }
+        .field input:focus, .field select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+        .btn:hover { background: #1557b0; }
+        .btn-share { background: #25D366; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .resultado { display: none; margin-top: 1rem; }
+        .destaque-box { background: linear-gradient(135deg, #e8f5e9, #e3f2fd); border-radius: 16px; padding: 28px; text-align: center; margin-bottom: 20px; }
+        .destaque-valor { font-size: 52px; font-weight: bold; color: #1a73e8; line-height: 1; }
+        .destaque-label { font-size: 16px; color: #555; margin-top: 6px; }
+        .copos-wrap { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 16px 0; }
+        .copo { font-size: 22px; transition: transform 0.2s; }
+        .copo:hover { transform: scale(1.2); }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+        .card { background: #f8f9ff; border-radius: 10px; padding: 14px; border: 1px solid #e8f0fe; text-align: center; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .card-value { font-size: 18px; font-weight: bold; color: #1a73e8; }
+        .dica-box { background: #e8f5e9; border-left: 4px solid #43a047; border-radius: 8px; padding: 14px 16px; margin-top: 16px; font-size: 13px; color: #2e7d32; line-height: 1.7; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>💧 Calculadora de Hidratação</h1>
+        <a href="/saude/">← Voltar</a>
+    </div>
+    <p class="subtitle">Descubra quantos litros de água você deve beber por dia.</p>
+
+    <p class="section-title">Seus Dados</p>
+    <div class="row">
+        <div class="field">
+            <label>Peso (kg)</label>
+            <input type="number" id="peso" placeholder="Ex: 70" min="20" max="300" step="0.5">
+        </div>
+        <div class="field">
+            <label>Nível de Atividade Física</label>
+            <select id="atividade">
+                <option value="1.0">Sedentário (quase sem exercício)</option>
+                <option value="1.15">Leve (caminhada, yoga)</option>
+                <option value="1.3" selected>Moderado (academia 3x/semana)</option>
+                <option value="1.45">Intenso (treino diário)</option>
+                <option value="1.6">Muito intenso (atleta / 2x/dia)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Clima / Temperatura</label>
+            <select id="clima">
+                <option value="0">Frio ou temperado</option>
+                <option value="0.3" selected>Quente (verão normal)</option>
+                <option value="0.5">Muito quente / úmido</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Idade</label>
+            <input type="number" id="idade" placeholder="Ex: 30" min="1" max="120">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcular()">💧 Calcular</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <div class="resultado" id="resultado" style="animation: fadeIn 0.4s">
+        <div class="destaque-box">
+            <div class="destaque-valor" id="rLitros">—</div>
+            <div class="destaque-label">litros por dia</div>
+            <div class="copos-wrap" id="copos"></div>
+            <div style="font-size:12px;color:#888;margin-top:4px">Cada 🥤 representa 250ml (1 copo)</div>
+        </div>
+        <div class="cards">
+            <div class="card"><div class="card-label">Copos (250ml)</div><div class="card-value" id="rCopos">—</div></div>
+            <div class="card"><div class="card-label">Garrafinha (500ml)</div><div class="card-value" id="rGarrafinhas">—</div></div>
+            <div class="card"><div class="card-label">Garrafa (1L)</div><div class="card-value" id="rGarrafas">—</div></div>
+        </div>
+        <div class="dica-box" id="dicaBox"></div>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ Recomendação baseada na fórmula de 35ml/kg ajustada por atividade e clima.<br>
+        Consulte um nutricionista ou médico para recomendações personalizadas.
+    </p>
+</div>
+<script>
+    function calcular(){
+        const peso     = parseFloat(document.getElementById('peso').value)||0;
+        const ativ     = parseFloat(document.getElementById('atividade').value)||1.3;
+        const clima    = parseFloat(document.getElementById('clima').value)||0;
+        const idade    = parseInt(document.getElementById('idade').value)||30;
+        if(!peso){ alert('Informe seu peso.'); return; }
+
+        let base = peso * 35; // ml base
+        base *= ativ;
+        base += clima * 200;
+        if(idade > 60) base += 200; // idosos têm menor sensação de sede
+
+        const litros      = base / 1000;
+        const copos       = Math.ceil(litros / 0.25);
+        const garrafinhas = Math.ceil(litros / 0.5);
+        const garrafas    = Math.ceil(litros / 1);
+
+        document.getElementById('rLitros').textContent    = litros.toFixed(1).replace('.',',') + 'L';
+        document.getElementById('rCopos').textContent     = copos + 'x';
+        document.getElementById('rGarrafinhas').textContent = garrafinhas + 'x';
+        document.getElementById('rGarrafas').textContent  = garrafas + 'x';
+
+        // Copos visuais
+        const copWrap = document.getElementById('copos');
+        copWrap.innerHTML = Array(Math.min(copos, 20)).fill('🥤').join('') +
+            (copos > 20 ? `<span style="font-size:13px;color:#888"> +${copos-20} copos</span>` : '');
+
+        // Dica personalizada
+        const dica = document.getElementById('dicaBox');
+        let txt = '';
+        if(litros < 1.5) txt = '⚠️ Sua necessidade está abaixo da média — mas cada corpo é diferente. Fique atento a sinais de sede e urina escura.';
+        else if(litros <= 2.5) txt = '✅ Boa meta! Distribua a ingestão ao longo do dia — não espere sentir sede para beber água.';
+        else txt = '💪 Você tem uma demanda alta de água, especialmente pelo nível de atividade. Hidratação com eletrólitos pode ajudar após treinos intensos.';
+        if(idade > 60) txt += ' Idosos costumam sentir menos sede — programe lembretes ao longo do dia.';
+        dica.textContent = txt;
+
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('btnShare').style.display  = 'inline-flex';
+    }
+
+    function compartilhar(){
+        const l = document.getElementById('rLitros').textContent;
+        const c = document.getElementById('rCopos').textContent;
+        const t = `💧 Descobri minha hidratação ideal no Zinha!\n\n🥤 Meta diária: ${l} (${c} copos de 250ml)\n\nCalcule a sua: zinha.com.br/saude/hidratacao/`;
+        navigator.share ? navigator.share({title:'Minha Hidratação',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>

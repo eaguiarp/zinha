@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Prazo — Zinha</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 750px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header a { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 0.25rem; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+        .section-title { font-size: 12px; font-weight: bold; color: #1a73e8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 1rem; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select, .field textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; font-family: inherit; }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px #e8f0fe; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { background: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+        .btn:hover { background: #1557b0; }
+        .btn-share { background: #25D366; display: none; }
+        .btn-share:hover { background: #1ebe57; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 1rem 0; }
+        .card { background: #f8f9ff; border-radius: 10px; padding: 14px; border: 1px solid #e8f0fe; text-align: center; }
+        .card-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .card-value { font-size: 22px; font-weight: bold; color: #1a73e8; }
+        .total-box { background: #e8f0fe; border-radius: 12px; padding: 16px 20px; margin-top: 16px; }
+        .total-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 14px; color: #555; border-bottom: 1px solid #d0dff8; }
+        .total-row:last-child { border-bottom: none; font-weight: bold; color: #1a73e8; font-size: 16px; }
+        .feriados-field { margin-top: 12px; }
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; text-align: center; line-height: 1.6; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📅 Calculadora de Prazo</h1>
+        <a href="/utilitarios/">← Voltar</a>
+    </div>
+    <p class="subtitle">Calcule dias corridos, úteis e o prazo final entre duas datas.</p>
+
+    <p class="section-title">Período</p>
+    <div class="row">
+        <div class="field">
+            <label>Data inicial</label>
+            <input type="date" id="dataInicio">
+        </div>
+        <div class="field">
+            <label>Data final</label>
+            <input type="date" id="dataFim">
+        </div>
+        <div class="field">
+            <label>Contar sábados?</label>
+            <select id="contarSab">
+                <option value="0">Não (sábado = não útil)</option>
+                <option value="1">Sim (sábado = útil)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="feriados-field field">
+        <label>Feriados no período (opcional)</label>
+        <textarea id="feriados" rows="2" placeholder="Ex: 07/09/2025, 25/12/2025 — separe por vírgula"></textarea>
+        <small>Informe feriados que caem em dias úteis para deduzir do total</small>
+    </div>
+
+    <div class="btn-group" style="margin-top:15px">
+        <button class="btn" onclick="calcular()">📅 Calcular Prazo</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <div id="resultado" style="display:none;animation:fadeIn 0.4s">
+        <p class="section-title">Resultado</p>
+        <div class="cards">
+            <div class="card"><div class="card-label">Dias Corridos</div><div class="card-value" id="rCorridos">—</div></div>
+            <div class="card"><div class="card-label">Dias Úteis</div><div class="card-value" id="rUteis">—</div></div>
+            <div class="card"><div class="card-label">Fins de semana</div><div class="card-value" id="rFds">—</div></div>
+            <div class="card"><div class="card-label">Feriados deduzidos</div><div class="card-value" id="rFeriados">—</div></div>
+        </div>
+        <div class="total-box">
+            <div class="total-row"><span>De</span><span id="tDe">—</span></div>
+            <div class="total-row"><span>Até</span><span id="tAte">—</span></div>
+            <div class="total-row"><span>Total corrido</span><span id="tCorridos">—</span></div>
+            <div class="total-row"><span>Fins de semana / feriados</span><span id="tFds">—</span></div>
+            <div class="total-row"><span>Dias úteis líquidos</span><span id="tUteis">—</span></div>
+        </div>
+    </div>
+
+    <p class="footer-note">
+        ⚠️ Fins de semana são excluídos automaticamente. Feriados devem ser informados manualmente.<br>
+        Sábados como úteis é comum em contratos — verifique o acordo ou cláusula.
+    </p>
+</div>
+<script>
+    window.onload = function(){
+        const hoje = new Date();
+        const fmt  = d => d.toISOString().slice(0,10);
+        document.getElementById('dataInicio').value = fmt(hoje);
+        const fim = new Date(hoje); fim.setDate(fim.getDate()+30);
+        document.getElementById('dataFim').value = fmt(fim);
+    };
+
+    function parseFeriados(str){
+        if(!str.trim()) return new Set();
+        return new Set(str.split(',').map(s=>{
+            const p = s.trim().split('/');
+            if(p.length===3) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+            return '';
+        }).filter(Boolean));
+    }
+
+    function fmtData(d){
+        return d.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    }
+
+    function calcular(){
+        const d1    = new Date(document.getElementById('dataInicio').value + 'T12:00:00');
+        const d2    = new Date(document.getElementById('dataFim').value + 'T12:00:00');
+        const contSab = parseInt(document.getElementById('contarSab').value)||0;
+        const feriados = parseFeriados(document.getElementById('feriados').value);
+
+        if(!document.getElementById('dataInicio').value || !document.getElementById('dataFim').value){
+            alert('Informe as duas datas.'); return;
+        }
+        if(d2 < d1){ alert('A data final deve ser depois da inicial.'); return; }
+
+        let corridos=0, uteis=0, fds=0, feriadosDed=0;
+        const cur = new Date(d1);
+        while(cur <= d2){
+            corridos++;
+            const diaSemana = cur.getDay(); // 0=dom,6=sab
+            const iso = cur.toISOString().slice(0,10);
+            const ehFds = diaSemana===0 || (diaSemana===6 && !contSab);
+            const ehFeriado = feriados.has(iso) && !ehFds;
+            if(ehFds) fds++;
+            else if(ehFeriado) feriadosDed++;
+            else uteis++;
+            cur.setDate(cur.getDate()+1);
+        }
+
+        document.getElementById('rCorridos').textContent = corridos;
+        document.getElementById('rUteis').textContent    = uteis;
+        document.getElementById('rFds').textContent      = fds;
+        document.getElementById('rFeriados').textContent = feriadosDed;
+        document.getElementById('tDe').textContent       = fmtData(d1);
+        document.getElementById('tAte').textContent      = fmtData(d2);
+        document.getElementById('tCorridos').textContent = corridos + ' dias';
+        document.getElementById('tFds').textContent      = (fds + feriadosDed) + ' dias';
+        document.getElementById('tUteis').textContent    = uteis + ' dias úteis';
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('btnShare').style.display  = 'inline-flex';
+    }
+
+    function compartilhar(){
+        const uteis = document.getElementById('rUteis').textContent;
+        const corr  = document.getElementById('rCorridos').textContent;
+        const t = `📅 Calculei meu prazo no Zinha!\n\n📆 Dias corridos: ${corr}\n✅ Dias úteis: ${uteis}\n\nCalcule o seu: zinha.com.br/utilitarios/prazo/`;
+        navigator.share ? navigator.share({title:'Meu Prazo',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
+    }
+</script>
+</body>
+</html>
