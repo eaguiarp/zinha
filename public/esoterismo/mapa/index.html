@@ -288,10 +288,15 @@ const PLANETAS_INFO = {
 
 // Converte longitude eclíptica (0-360) para signo
 function lonParaSigno(lon) {
+    // Garante que a longitude esteja entre 0 e 360
     const norm = ((lon % 360) + 360) % 360;
-    const idx  = Math.floor(norm / 30);
+    const idx = Math.floor(norm / 30);
+    
+    // Trava de segurança: se o índice for inválido, assume Áries (0) para não quebrar
+    const signoValido = SIGNOS[idx] || SIGNOS[0];
+    
     const grau = Math.floor(norm % 30);
-    return { signo: SIGNOS[idx], grau, lon: norm };
+    return { signo: signoValido, grau, lon: norm };
 }
 
 // ============================================================

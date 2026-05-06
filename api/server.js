@@ -16,29 +16,20 @@ app.use('/api', horasRoute);
 app.use(express.static(path.join(__dirname, '../public')));
 
 // 3. Fallback inteligente para SPA com subpastas
-//    Regra: se a URL não tem extensão (não é .js, .css, .png...)
-//    tenta servir o index.html da subpasta correspondente.
-//    Ex: /esoterismo/mapa/ → public/esoterismo/mapa/index.html
-//        /financas/        → public/financas/index.html
-//        /qualquer-rota/   → public/index.html (raiz, fallback final)
-app.get('*', (req, res) => {
-    const urlPath = req.path;
-
-    // Se tem extensão de arquivo (ex: .js, .css, .png), retorna 404 direto
-    // para não esconder erros de asset não encontrado
+app.use((req, res, next) => {
+    if (req.method !== 'GET') return next();
+    const urlPath = req.path.slice(1);
+    
     if (/\.[a-zA-Z0-9]+$/.test(urlPath)) {
         return res.status(404).send('Arquivo não encontrado.');
     }
 
-    // Monta o caminho esperado: tenta public/<rota>/index.html
     const subIndex = path.join(__dirname, '../public', urlPath, 'index.html');
 
     if (fs.existsSync(subIndex)) {
-        // Existe um index.html nessa subpasta → serve ele
         return res.sendFile(subIndex);
     }
 
-    // Fallback final: serve o index.html raiz
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
