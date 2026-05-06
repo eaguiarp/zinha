@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Astral Simplificado — Zinha</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        /* ===== HEADER ===== */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .header a { color: #6a1b9a; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .header a:hover { text-decoration: underline; }
+        h1 { font-size: 24px; color: #6a1b9a; margin-bottom: 4px; }
+        .subtitle { font-size: 14px; color: #888; margin-bottom: 1.5rem; }
+
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            font-size: 12px; font-weight: bold; color: #6a1b9a;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            margin: 1.5rem 0 1rem;
+            border-bottom: 2px solid #f3e5f5; padding-bottom: 5px;
+        }
+
+        /* ===== FORM ===== */
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label { font-size: 13px; color: #555; font-weight: 500; }
+        .field small { font-size: 11px; color: #888; }
+        .field input, .field select {
+            padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+            font-size: 14px; color: #333; background: #fff;
+            outline: none; transition: all 0.2s;
+        }
+        .field input:focus, .field select:focus {
+            border-color: #6a1b9a;
+            box-shadow: 0 0 0 3px #f3e5f5;
+        }
+
+        /* ===== BOTÃO ===== */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn {
+            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            color: white; border: none; border-radius: 8px;
+            padding: 13px 24px; font-size: 15px; font-weight: bold;
+            cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; flex: 1;
+        }
+        .btn:hover { background: linear-gradient(135deg, #4a148c, #7b1fa2); transform: translateY(-1px); }
+        .btn:active { transform: scale(0.98); }
+        .btn-share { background: linear-gradient(135deg, #25D366, #1ebe57); display: none; }
+        .btn-share:hover { background: linear-gradient(135deg, #1ebe57, #16a349); }
+
+        /* ===== RESULTADO ===== */
+        .resultado { display: none; animation: fadeIn 0.5s ease; }
+
+        /* Cabeçalho do resultado */
+        .mapa-header {
+            background: linear-gradient(135deg, #1a0533, #2d0a4e);
+            border-radius: 14px; padding: 24px;
+            text-align: center; margin-bottom: 20px;
+            position: relative; overflow: hidden;
+        }
+        .mapa-header::before {
+            content: '✦ ✧ ★ ✧ ✦ ✧ ★ ✧ ✦ ✧ ★ ✧ ✦';
+            position: absolute; top: 8px; left: 0; right: 0;
+            font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 3px;
+        }
+        .mapa-header h2 { color: #e1bee7; font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+        .mapa-header .nome { color: #fff; font-size: 22px; font-weight: bold; }
+        .mapa-header .data { color: #ce93d8; font-size: 13px; margin-top: 4px; }
+
+        /* Grid de planetas */
+        .planetas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .planeta-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid #f3e5f5;
+            box-shadow: 0 2px 6px rgba(106,27,154,0.06);
+            transition: transform 0.2s;
+        }
+        .planeta-card:hover { transform: translateY(-3px); }
+        .planeta-icone { font-size: 28px; margin-bottom: 6px; }
+        .planeta-nome { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .planeta-signo { font-size: 18px; font-weight: bold; color: #6a1b9a; }
+        .planeta-emoji { font-size: 16px; margin-right: 4px; }
+
+        /* Destaque Ascendente */
+        .planeta-card.ascendente {
+            background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+            border-color: #9c27b0;
+        }
+        .planeta-card.ascendente .planeta-signo { color: #4a148c; font-size: 20px; }
+
+        /* Nota sobre grau */
+        .grau-detalhe { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+        /* Aviso de hora não informada */
+        .aviso-hora {
+            background: #fff8e1; border-left: 4px solid #f9a825;
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 12px; color: #666; margin-bottom: 16px; line-height: 1.6;
+            display: none;
+        }
+
+        /* ===== BOTÃO AFILIADO ===== */
+        .afiliado-box {
+            background: linear-gradient(135deg, #1a0533, #2d0a4e);
+            border-radius: 14px; padding: 24px 20px;
+            text-align: center; margin-top: 20px;
+        }
+        .afiliado-box p {
+            color: #ce93d8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;
+        }
+        .afiliado-box strong { color: #fff; }
+        .btn-afiliado {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6f00, #ff8f00);
+            color: white; text-decoration: none;
+            border-radius: 50px; padding: 14px 32px;
+            font-size: 15px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,111,0,0.4);
+            transition: all 0.25s;
+            animation: pulsar 2.5s infinite;
+        }
+        .btn-afiliado:hover {
+            background: linear-gradient(135deg, #e65100, #ef6c00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,111,0,0.5);
+        }
+        @keyframes pulsar {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255,111,0,0.4); }
+            50%       { box-shadow: 0 4px 25px rgba(255,111,0,0.7); }
+        }
+
+        .footer-note { margin-top: 1.5rem; font-size: 12px; color: #888; line-height: 1.6; text-align: center; }
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 480px) {
+            .container { padding: 1.5rem 1rem; }
+            .planetas-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn-afiliado { font-size: 14px; padding: 13px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>🔮 Mapa Astral Simplificado</h1>
+        <a href="/esoterismo/">← Voltar</a>
+    </div>
+    <p class="subtitle">Descubra as posições dos planetas no momento do seu nascimento.</p>
+
+    <!-- FORMULÁRIO -->
+    <p class="section-title">Seus Dados de Nascimento</p>
+    <div class="row">
+        <div class="field">
+            <label>Data de Nascimento</label>
+            <input type="date" id="dataNasc" required>
+        </div>
+        <div class="field">
+            <label>Hora de Nascimento</label>
+            <input type="time" id="horaNasc" value="12:00">
+            <small>Necessária para calcular o Ascendente</small>
+        </div>
+    </div>
+    <div class="row">
+        <div class="field">
+            <label>Seu Nome (opcional)</label>
+            <input type="text" id="nomeUsuario" placeholder="Ex: Maria Silva" maxlength="40">
+        </div>
+        <div class="field">
+            <label>Fuso Horário de Nascimento</label>
+            <select id="fusoHorario">
+                <option value="-3" selected>Brasília / SP / RJ (UTC-3)</option>
+                <option value="-4">Cuiabá / AM (UTC-4)</option>
+                <option value="-5">Acre / AM oeste (UTC-5)</option>
+                <option value="-2">Fernando de Noronha (UTC-2)</option>
+                <option value="0">Portugal / Londres (UTC 0)</option>
+                <option value="1">Europa Central (UTC+1)</option>
+                <option value="-6">México Central (UTC-6)</option>
+                <option value="-5">Nova York / Miami (UTC-5)</option>
+                <option value="-8">Los Angeles (UTC-8)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="calcularMapa()">🌟 Gerar Meu Mapa Astral</button>
+        <button class="btn btn-share" id="btnShare" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
+    <!-- RESULTADO -->
+    <div class="resultado" id="resultado">
+
+        <div class="mapa-header">
+            <h2>Mapa Astral de</h2>
+            <div class="nome" id="rNome">—</div>
+            <div class="data" id="rData">—</div>
+        </div>
+
+        <div class="aviso-hora" id="avisoHora">
+            ⚠️ O <strong>Ascendente</strong> muda a cada 2 horas. Sem a hora exata, o cálculo usa meio-dia como referência — o resultado pode não ser preciso.
+        </div>
+
+        <div class="planetas-grid" id="planetasGrid"></div>
+
+        <!-- BOTÃO AFILIADO -->
+        <div class="afiliado-box">
+            <p>
+                Esses são apenas <strong>5 pontos</strong> do seu Mapa Astral.<br>
+                Um mapa completo tem mais de <strong>30 posições</strong> — incluindo casas astrológicas, aspectos e seu propósito de vida.
+            </p>
+            <a href="SEU_LINK_AFILIADO_AQUI" id="btnAfiliado" target="_blank" rel="noopener" class="btn-afiliado">
+                ✨ Quer uma análise profunda do seu destino? Clique aqui para ver seu Mapa Completo!
+            </a>
+        </div>
+
+    </div>
+
+    <p class="footer-note">
+        🔭 Cálculo baseado em astronomia real (posições eclípticas planetárias).<br>
+        Para maior precisão no Ascendente, informe a hora e o fuso horário exatos do nascimento.
+    </p>
+
+</div>
+
+<!-- ===== ASTRONOMY ENGINE (CDN) ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/astronomy-engine/2.1.19/astronomy.browser.min.js"></script>
+
+<script>
+// ============================================================
+// DADOS DOS SIGNOS
+// ============================================================
+const SIGNOS = [
+    { nome: 'Áries',       emoji: '♈', inicio: 0   },
+    { nome: 'Touro',       emoji: '♉', inicio: 30  },
+    { nome: 'Gêmeos',      emoji: '♊', inicio: 60  },
+    { nome: 'Câncer',      emoji: '♋', inicio: 90  },
+    { nome: 'Leão',        emoji: '♌', inicio: 120 },
+    { nome: 'Virgem',      emoji: '♍', inicio: 150 },
+    { nome: 'Libra',       emoji: '♎', inicio: 180 },
+    { nome: 'Escorpião',   emoji: '♏', inicio: 210 },
+    { nome: 'Sagitário',   emoji: '♐', inicio: 240 },
+    { nome: 'Capricórnio', emoji: '♑', inicio: 270 },
+    { nome: 'Aquário',     emoji: '♒', inicio: 300 },
+    { nome: 'Peixes',      emoji: '♓', inicio: 330 },
+];
+
+// Ícones visuais para cada planeta
+const PLANETAS_INFO = {
+    Sol:        { icone: '☀️', label: 'Sol'        },
+    Lua:        { icone: '🌙', label: 'Lua'        },
+    Ascendente: { icone: '⬆️', label: 'Ascendente' },
+    Venus:      { icone: '💚', label: 'Vênus'      },
+    Mars:       { icone: '🔴', label: 'Marte'      },
+};
+
+// Converte longitude eclíptica (0-360) para signo
+function lonParaSigno(lon) {
+    const norm = ((lon % 360) + 360) % 360;
+    const idx  = Math.floor(norm / 30);
+    const grau = Math.floor(norm % 30);
+    return { signo: SIGNOS[idx], grau, lon: norm };
+}
+
+// ============================================================
+// CALCULAR ASCENDENTE (fórmula aproximada)
+// Usa RAMC + obliquidade para estimar o Ascendente
+// ============================================================
+function calcularAscendente(dataUTC, latRad) {
+    // Obliquidade da eclíptica (aproximação)
+    const obliq = 23.4393 * Math.PI / 180;
+
+    // Tempo Sidéreo de Greenwich (GMST) simplificado
+    const jd = Astronomy.MakeTime(dataUTC).tt + 2451545.0;
+    const T  = (jd - 2451545.0) / 36525.0;
+    let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933*T*T;
+    gmst = ((gmst % 360) + 360) % 360;
+
+    // RAMC em radianos (fuso já convertido para UTC antes de chamar)
+    const ramc = gmst * Math.PI / 180;
+
+    // Fórmula do Ascendente
+    const num = -Math.cos(ramc);
+    const den = Math.sin(ramc) * Math.cos(obliq) + Math.tan(latRad) * Math.sin(obliq);
+    let asc = Math.atan2(num, den) * 180 / Math.PI;
+
+    // Ajuste de quadrante
+    if (Math.cos(ramc) > 0) asc += 180;
+    asc = ((asc % 360) + 360) % 360;
+
+    return asc;
+}
+
+// ============================================================
+// FUNÇÃO PRINCIPAL
+// ============================================================
+function calcularMapa() {
+    const dataNasc = document.getElementById('dataNasc').value;
+    const horaNasc = document.getElementById('horaNasc').value || '12:00';
+    const fuso     = parseFloat(document.getElementById('fusoHorario').value) || -3;
+    const nome     = document.getElementById('nomeUsuario').value.trim() || 'Você';
+
+    if (!dataNasc) { alert('Por favor, informe a data de nascimento.'); return; }
+
+    const [ano, mes, dia] = dataNasc.split('-').map(Number);
+    const [hora, min]     = horaNasc.split(':').map(Number);
+
+    // Converter para UTC
+    const horaUTC  = hora - fuso;
+    const dataUTC  = new Date(Date.UTC(ano, mes - 1, dia, horaUTC, min, 0));
+    const astroTime = Astronomy.MakeTime(dataUTC);
+
+    // ---- POSIÇÕES PLANETÁRIAS (longitude eclíptica) ----
+    const sol   = Astronomy.SunPosition(astroTime);
+    const lua   = Astronomy.GeoMoon(astroTime);
+
+    // Vênus e Marte via GeoVector + coordenadas eclípticas
+    function getLonPlaneta(corpo) {
+        const vec  = Astronomy.GeoVector(corpo, astroTime, false);
+        const ecl  = Astronomy.Ecliptic(vec);
+        return ecl.elon;
+    }
+
+    const lonSol    = sol.elon;
+    const lonLua    = Astronomy.EclipticGeoMoon(astroTime).elon; // longitude eclíptica da Lua
+    const lonVenus  = getLonPlaneta(Astronomy.Body.Venus);
+    const lonMarte  = getLonPlaneta(Astronomy.Body.Mars);
+
+    // Ascendente (latitude média para Brasil ~-15°)
+    const latRad = -15 * Math.PI / 180;
+    const lonAsc = calcularAscendente(dataUTC, latRad);
+
+    // ---- MONTAR RESULTADOS ----
+    const planetas = [
+        { key: 'Sol',        lon: lonSol   },
+        { key: 'Lua',        lon: lonLua   },
+        { key: 'Ascendente', lon: lonAsc   },
+        { key: 'Venus',      lon: lonVenus },
+        { key: 'Mars',       lon: lonMarte },
+    ];
+
+    // ---- RENDERIZAR HEADER ----
+    document.getElementById('rNome').textContent = nome;
+    document.getElementById('rData').textContent =
+        `${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano} às ${horaNasc}`;
+
+    // Aviso se hora padrão
+    const horaUsada = document.getElementById('horaNasc').value;
+    document.getElementById('avisoHora').style.display =
+        (!horaUsada || horaUsada === '12:00') ? 'block' : 'none';
+
+    // ---- RENDERIZAR CARDS ----
+    const grid = document.getElementById('planetasGrid');
+    grid.innerHTML = '';
+
+    planetas.forEach(p => {
+        const info  = PLANETAS_INFO[p.key];
+        const dados = lonParaSigno(p.lon);
+        const isAsc = p.key === 'Ascendente';
+
+        const card = document.createElement('div');
+        card.className = 'planeta-card' + (isAsc ? ' ascendente' : '');
+        card.innerHTML = `
+            <div class="planeta-icone">${info.icone}</div>
+            <div class="planeta-nome">${info.label}</div>
+            <div class="planeta-signo">
+                <span class="planeta-emoji">${dados.signo.emoji}</span>${dados.signo.nome}
+            </div>
+            <div class="grau-detalhe">${dados.grau}° de ${dados.signo.nome}</div>
+        `;
+        grid.appendChild(card);
+    });
+
+    // Exibir resultado
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('btnShare').style.display  = 'inline-flex';
+    document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// COMPARTILHAR
+// ============================================================
+function compartilhar() {
+    const nome   = document.getElementById('rNome').textContent;
+    const cards  = document.querySelectorAll('.planeta-card');
+    let linhas   = '';
+    cards.forEach(c => {
+        const planeta = c.querySelector('.planeta-nome').textContent;
+        const signo   = c.querySelector('.planeta-signo').textContent.trim();
+        linhas += `${planeta}: ${signo}\n`;
+    });
+    const texto = `🔮 Mapa Astral de ${nome} — Zinha\n\n${linhas}\nDescubra o seu: zinha.com.br/esoterismo/mapa/`;
+    navigator.share
+        ? navigator.share({ title: 'Meu Mapa Astral', text: texto })
+        : navigator.clipboard.writeText(texto).then(() => alert('Copiado! Cole onde quiser.'));
+}
+</script>
+</body>
+</html>

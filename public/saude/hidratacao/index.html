@@ -147,7 +147,7 @@
     function compartilhar(){
         const l = document.getElementById('rLitros').textContent;
         const c = document.getElementById('rCopos').textContent;
-        const t = `💧 Descobri minha hidratação ideal no Zinha!\n\n🥤 Meta diária: ${l} (${c} copos de 250ml)\n\nCalcule a sua: zinha.com.br/saude/hidratacao/`;
+        const t = `💧 Descobri minha hidratação ideal na Zinha!\n\n🥤 Meta diária: ${l} (${c} copos de 250ml)\n\nCalcule a sua: zinha.com.br/saude/hidratacao/`;
         navigator.share ? navigator.share({title:'Minha Hidratação',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>

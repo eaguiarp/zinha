@@ -174,9 +174,22 @@
     function preencherZeroSeVazio(input){
         if(!input.value.trim()) input.value = '0,00';
     }
-    function moedaParaNumero(valor){
+    function parseNumeroPTBR(valor){
         if(!valor) return 0;
         return parseFloat(valor.replace(/\./g,'').replace(',','.'))||0;
+    }
+    function maskDecimal(input){
+        let valor = input.value.replace(/[^\d,]/g, '');
+        const partes = valor.split(',');
+        partes[0] = partes[0].replace(/^0+(\d)/, '$1');
+        if(partes.length > 1){
+            partes[1] = partes[1].slice(0,2);
+            valor = partes[0] + ',' + partes[1];
+        } else {
+            valor = partes[0];
+        }
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+        input.value = valor;
     }
     function fmtPct(v){ return v.toFixed(4).replace('.',',') + '%'; }
     let sTabAberta = false;
@@ -190,8 +203,8 @@
     }
 
     function calcularSimular(){
-        const bem  = moedaParaNumero(document.getElementById('s-bem').value)||0;
-        const ent  = moedaParaNumero(document.getElementById('s-entrada').value)||0;
+        const bem  = parseNumeroPTBR(document.getElementById('s-bem').value)||0;
+        const ent  = parseNumeroPTBR(document.getElementById('s-entrada').value)||0;
         const taxa = parseFloat(document.getElementById('s-taxa').value)/100||0;
         const n    = parseInt(document.getElementById('s-prazo').value)||1;
         const sis  = document.getElementById('s-sistema').value;
@@ -243,14 +256,14 @@
     }
 
     function compartilharSimular(){
-        const t = `🏦 Simulei meu financiamento no Zinha!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: https://zinha.com.br/financas/FINANCIAMENTO/`;
+        const t = `🏦 Simulei meu financiamento na Zinha!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: https://zinha.com.br/financas/FINANCIAMENTO/`;
         navigator.share ? navigator.share({title:'Financiamento',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 
     function calcularDescobrir(){
-        const bem     = moedaParaNumero(document.getElementById('d-bem').value)||0;
-        const entrada = moedaParaNumero(document.getElementById('d-entrada').value)||0;
-        const parcela = moedaParaNumero(document.getElementById('d-parcela').value)||0;
+        const bem     = parseNumeroPTBR(document.getElementById('d-bem').value)||0;
+        const entrada = parseNumeroPTBR(document.getElementById('d-entrada').value)||0;
+        const parcela = parseNumeroPTBR(document.getElementById('d-parcela').value)||0;
         const n       = parseInt(document.getElementById('d-prazo').value)||0;
 
         if(!bem || !parcela || !n){ alert('Preencha: valor do bem, valor da parcela e número de parcelas.'); return; }

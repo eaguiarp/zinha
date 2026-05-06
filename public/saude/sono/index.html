@@ -192,7 +192,7 @@
         const hora = modo==='acordar'
             ? document.getElementById('acordar-hora').value
             : document.getElementById('dormir-hora').value;
-        const t = `😴 Calculei meus ciclos de sono no Zinha!\n\n⏰ Horário ${modo==='acordar'?'para acordar':'para dormir'}: ${hora}\n\nCalcule os seus: zinha.com.br/saude/sono/`;
+        const t = `😴 Calculei meus ciclos de sono na Zinha!\n\n⏰ Horário ${modo==='acordar'?'para acordar':'para dormir'}: ${hora}\n\nCalcule os seus: zinha.com.br/saude/sono/`;
         navigator.share ? navigator.share({title:'Meu Sono',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>

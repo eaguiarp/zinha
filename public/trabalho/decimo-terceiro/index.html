@@ -199,7 +199,7 @@
         const liq   = document.getElementById('rLiquido').textContent;
         const bruto = document.getElementById('rBruto').textContent;
         const p2    = document.getElementById('tTotal').textContent;
-        const texto = `🎄 Calculei meu 13º salário no Zinha!\n\n💰 13º Bruto: ${bruto}\n✅ 13º Líquido: ${liq}\n📦 2ª Parcela a Receber: ${p2}\n\nCalcule o seu: zinha.com.br/trabalho/decimo-terceiro/`;
+        const texto = `🎄 Calculei meu 13º salário na Zinha!\n\n💰 13º Bruto: ${bruto}\n✅ 13º Líquido: ${liq}\n📦 2ª Parcela a Receber: ${p2}\n\nCalcule o seu: zinha.com.br/trabalho/decimo-terceiro/`;
         navigator.share ? navigator.share({title:'Meu 13º Salário',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
     }
 </script>

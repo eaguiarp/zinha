@@ -178,7 +178,7 @@
         const tdee = document.getElementById('rTDEE').textContent;
         const meta = document.getElementById('rMeta').textContent;
         const obj  = document.getElementById('objetivo');
-        const t = `🔥 Calculei meu gasto calórico no Zinha!\n\n⚡ Gasto diário: ${tdee}\n🎯 Meta (${obj.options[obj.selectedIndex].text}): ${meta}\n\nCalcule o seu: zinha.com.br/saude/calorias/`;
+        const t = `🔥 Calculei meu gasto calórico na Zinha!\n\n⚡ Gasto diário: ${tdee}\n🎯 Meta (${obj.options[obj.selectedIndex].text}): ${meta}\n\nCalcule o seu: zinha.com.br/saude/calorias/`;
         navigator.share ? navigator.share({title:'Minhas Calorias',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>

@@ -159,7 +159,7 @@
     function compartilhar(){
         const uteis = document.getElementById('rUteis').textContent;
         const corr  = document.getElementById('rCorridos').textContent;
-        const t = `📅 Calculei meu prazo no Zinha!\n\n📆 Dias corridos: ${corr}\n✅ Dias úteis: ${uteis}\n\nCalcule o seu: zinha.com.br/utilitarios/prazo/`;
+        const t = `📅 Calculei meu prazo na Zinha!\n\n📆 Dias corridos: ${corr}\n✅ Dias úteis: ${uteis}\n\nCalcule o seu: zinha.com.br/utilitarios/prazo/`;
         navigator.share ? navigator.share({title:'Meu Prazo',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>

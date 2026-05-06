@@ -145,7 +145,7 @@
         const tot = document.getElementById('rTotal').textContent;
         const pct = document.getElementById('gorjetaPct').value;
         const p   = document.getElementById('pessoas').value;
-        const t = `🍽️ Calculei a conta no Zinha!\n\nTotal com gorjeta (${pct}%): ${tot}\n💳 Cada um paga: ${pp} (${p} pessoas)\n\nCalcule a sua: zinha.com.br/utilitarios/gorjeta/`;
+        const t = `🍽️ Calculei a conta na Zinha!\n\nTotal com gorjeta (${pct}%): ${tot}\n💳 Cada um paga: ${pp} (${p} pessoas)\n\nCalcule a sua: zinha.com.br/utilitarios/gorjeta/`;
         navigator.share ? navigator.share({title:'Divisão da Conta',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado! Cole no grupo do WhatsApp.'));
     }
 

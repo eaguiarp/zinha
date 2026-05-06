@@ -269,7 +269,7 @@ function compartilhar(){
     const km   = document.getElementById('rRota').textContent;
     const pp   = document.getElementById('rPorPessoa').textContent;
     const tempo= document.getElementById('rTempo').textContent;
-    const t = `📍 Calculei a distância no Zinha!\n\n🗺️ ${a} → ${b}\n🚗 Distância estimada: ${km}\n⏱️ Tempo estimado: ${tempo}\n💰 Custo por pessoa: ${pp}\n\nCalcule a sua: zinha.com.br/utilitarios/distancia/`;
+    const t = `📍 Calculei a distância na Zinha!\n\n🗺️ ${a} → ${b}\n🚗 Distância estimada: ${km}\n⏱️ Tempo estimado: ${tempo}\n💰 Custo por pessoa: ${pp}\n\nCalcule a sua: zinha.com.br/utilitarios/distancia/`;
     navigator.share ? navigator.share({title:'Distância entre Cidades',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
 }
 </script>

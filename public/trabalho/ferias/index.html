@@ -203,7 +203,7 @@
     function compartilhar(){
         const liq   = document.getElementById('rLiquido').textContent;
         const bruto = document.getElementById('rBruto').textContent;
-        const texto = `🏖️ Calculei minhas férias no Zinha!\n\n💰 Total Bruto: ${bruto}\n✅ Líquido a Receber: ${liq}\n\nCalcule as suas: zinha.com.br/trabalho/ferias/`;
+        const texto = `🏖️ Calculei minhas férias na Zinha!\n\n💰 Total Bruto: ${bruto}\n✅ Líquido a Receber: ${liq}\n\nCalcule as suas: zinha.com.br/trabalho/ferias/`;
         navigator.share ? navigator.share({title:'Minhas Férias',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
     }
 </script>

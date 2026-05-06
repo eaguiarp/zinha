@@ -362,7 +362,7 @@ if (modalidade === 'aniversario') {
         const total = document.getElementById('tTotal').textContent;
         const tipo  = document.getElementById('tipo');
         const mod   = document.getElementById('modalidadeFGTS').value === 'aniversario' ? ' | Saque-Aniversário ativo' : '';
-        const texto = `📄 Simulei minha rescisão no Zinha!\n\n✅ Total Líquido Estimado: ${total}\n📋 Tipo: ${tipo.options[tipo.selectedIndex].text}${mod}\n\nSimule a sua: zinha.com.br/trabalho/rescisao/`;
+        const texto = `📄 Simulei minha rescisão na Zinha!\n\n✅ Total Líquido Estimado: ${total}\n📋 Tipo: ${tipo.options[tipo.selectedIndex].text}${mod}\n\nSimule a sua: zinha.com.br/trabalho/rescisao/`;
         navigator.share ? navigator.share({title:'Minha Rescisão',text:texto}) : navigator.clipboard.writeText(texto).then(()=>alert('Copiado!'));
     }
 </script>
