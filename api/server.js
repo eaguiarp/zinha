@@ -6,32 +6,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Rota da API (Mantenha como está)
+// 1. Rota da API (Backend)
 const horasRoute = require('./routes/calculadoraHoras');
 app.use('/api', horasRoute);
 
-
-// 2. O AJUSTE: Servir a pasta PUBLIC em vez de frontend
-// Isso libera o acesso para /js/astronomy.js e todas as outras ferramentas
+// 2. A CHAVE MESTRA: Servir a pasta PUBLIC como raiz de tudo
+// Isso já resolve automaticamente /js/, /esoterismo/, /financas/, etc.
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Se você tiver pastas específicas como esoterismo, o static acima já resolve,
-// mas para garantir rotas limpas, você pode manter a lógica:
-app.use('/esoterismo', express.static(path.join(__dirname, '../public/esoterismo')));
-
-// 3. Rota Raiz (Ajustada para public)
+// 3. Rota Raiz para carregar o index principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// 2. O SEGREDO: Servir a pasta frontend de forma absoluta
-// Isso garante que /calculadora-horas/calculadora.html seja encontrado
-app.use('/calculadora-horas', express.static(path.join(__dirname, '../public/calculadora-horas')));
-app.use(express.static(path.join(__dirname, '../public')));
-
-// 3. Rota Raiz para o Menu
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+// 4. Fallback (Opcional): Se o usuário digitar uma rota que não existe, 
+// ele tenta procurar dentro de public (ajuda em subpastas)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
