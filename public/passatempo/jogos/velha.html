@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha — Zinha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 30px 20px; text-align: center; }
+        .back { display: inline-block; margin-bottom: 20px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #e65100; margin-bottom: 4px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+        .modo { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .modo-btn { padding: 8px 20px; border: 2px solid #e65100; border-radius: 20px; background: white; color: #e65100; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .modo-btn.ativo { background: #e65100; color: white; }
+        .modo-btn:hover { transform: translateY(-1px); }
+
+        .placar { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+        .placar-item { background: white; padding: 10px 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .placar-item span { display: block; font-size: 11px; color: #aaa; text-transform: uppercase; }
+        .placar-item strong { font-size: 24px; }
+        .placar-item.x strong { color: #e65100; }
+        .placar-item.e strong { color: #888; }
+        .placar-item.o strong { color: #1565c0; }
+
+        .tabuleiro { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; max-width: 270px; margin: 0 auto 20px; }
+        .casa {
+            width: 100%; padding-bottom: 100%; position: relative;
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .casa:hover:not(.ocupada) { background: #fff3e0; transform: scale(1.04); }
+        .casa.ocupada { cursor: default; }
+        .casa span {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 44px; font-weight: bold;
+            animation: aparecer 0.2s ease;
+        }
+        .casa.x span { color: #e65100; }
+        .casa.o span { color: #1565c0; }
+        .casa.vitoria { background: #fff3e0; box-shadow: 0 0 0 3px #e65100; }
+        @keyframes aparecer { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .status { font-size: 16px; font-weight: bold; color: #e65100; min-height: 24px; margin-bottom: 16px; }
+        .btn { background: linear-gradient(135deg, #e65100, #ff7043); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,81,0,0.4); }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/passatempo/jogos/" class="back">← Voltar aos Jogos</a>
+    <h1>❌ Jogo da Velha</h1>
+    <p class="subtitle">Clássico de sempre — contra um amigo ou contra a IA.</p>
+
+    <div class="modo">
+        <button class="modo-btn ativo" onclick="setModo('ia')">🤖 vs IA</button>
+        <button class="modo-btn" onclick="setModo('pvp')">👥 2 Jogadores</button>
+    </div>
+
+    <div class="placar">
+        <div class="placar-item x"><span>❌ Você</span><strong id="pX">0</strong></div>
+        <div class="placar-item e"><span>Empate</span><strong id="pE">0</strong></div>
+        <div class="placar-item o"><span id="labelO">🤖 IA</span><strong id="pO">0</strong></div>
+    </div>
+
+    <p class="status" id="status">Sua vez — jogue com ❌</p>
+    <div class="tabuleiro" id="tabuleiro"></div>
+    <button class="btn" onclick="novoJogo()">🔁 Nova Partida</button>
+
+    <script>
+        const LINHAS_VITORIA = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        let tabuleiro, vez, jogoAtivo, modo;
+        let placar = { X: 0, E: 0, O: 0 };
+
+        function setModo(m) {
+            modo = m;
+            document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            document.getElementById('labelO').textContent = m === 'ia' ? '🤖 IA' : '⭕ J2';
+            novoJogo();
+        }
+
+        function novoJogo() {
+            tabuleiro = Array(9).fill('');
+            vez = 'X'; jogoAtivo = true;
+            document.getElementById('status').textContent = 'Sua vez — jogue com ❌';
+            renderTabuleiro();
+        }
+
+        function renderTabuleiro() {
+            const div = document.getElementById('tabuleiro');
+            div.innerHTML = '';
+            tabuleiro.forEach((val, i) => {
+                const casa = document.createElement('div');
+                casa.className = 'casa' + (val ? ' ocupada ' + val.toLowerCase() : '');
+                casa.innerHTML = val ? `<span>${val === 'X' ? '❌' : '⭕'}</span>` : '';
+                casa.onclick = () => clicar(i);
+                div.appendChild(casa);
+            });
+        }
+
+        function clicar(i) {
+            if (!jogoAtivo || tabuleiro[i]) return;
+            if (modo === 'ia' && vez === 'O') return;
+
+            jogar(i, vez);
+            if (!jogoAtivo) return;
+
+            if (modo === 'ia') {
+                vez = 'O';
+                setTimeout(() => {
+                    jogar(melhorJogada(), 'O');
+                    if (jogoAtivo) vez = 'X';
+                }, 350);
+            }
+        }
+
+        function jogar(i, jogador) {
+            tabuleiro[i] = jogador;
+            renderTabuleiro();
+            const vit = checarVitoria(jogador);
+            if (vit) {
+                jogoAtivo = false;
+                placar[jogador]++;
+                atualizarPlacar();
+                destacarVitoria(vit);
+                const nome = jogador === 'X' ? 'Você venceu' : (modo === 'ia' ? 'IA venceu' : 'J2 venceu');
+                document.getElementById('status').textContent = nome + '! 🎉';
+            } else if (tabuleiro.every(c => c)) {
+                jogoAtivo = false;
+                placar.E++;
+                atualizarPlacar();
+                document.getElementById('status').textContent = 'Empate! 🤝';
+            } else {
+                vez = jogador === 'X' ? 'O' : 'X';
+                if (modo === 'pvp') {
+                    document.getElementById('status').textContent = vez === 'X' ? 'Vez do J1 ❌' : 'Vez do J2 ⭕';
+                } else if (vez === 'X') {
+                    document.getElementById('status').textContent = 'Sua vez — jogue com ❌';
+                } else {
+                    document.getElementById('status').textContent = 'IA pensando...';
+                }
+            }
+        }
+
+        function checarVitoria(p) {
+            return LINHAS_VITORIA.find(l => l.every(i => tabuleiro[i] === p)) || null;
+        }
+
+        function destacarVitoria(linha) {
+            const casas = document.querySelectorAll('.casa');
+            linha.forEach(i => casas[i].classList.add('vitoria'));
+        }
+
+        function atualizarPlacar() {
+            document.getElementById('pX').textContent = placar.X;
+            document.getElementById('pE').textContent = placar.E;
+            document.getElementById('pO').textContent = placar.O;
+        }
+
+        // Minimax simples para a IA
+        function melhorJogada() {
+            let melhor = -Infinity, idx = -1;
+            tabuleiro.forEach((val, i) => {
+                if (!val) {
+                    tabuleiro[i] = 'O';
+                    const score = minimax(tabuleiro, 0, false);
+                    tabuleiro[i] = '';
+                    if (score > melhor) { melhor = score; idx = i; }
+                }
+            });
+            return idx;
+        }
+
+        function minimax(tab, depth, isMax) {
+            if (checarVitoriaTab(tab, 'O')) return 10 - depth;
+            if (checarVitoriaTab(tab, 'X')) return depth - 10;
+            if (tab.every(c => c)) return 0;
+            if (isMax) {
+                let best = -Infinity;
+                tab.forEach((v, i) => { if (!v) { tab[i] = 'O'; best = Math.max(best, minimax(tab, depth+1, false)); tab[i] = ''; } });
+                return best;
+            } else {
+                let best = Infinity;
+                tab.forEach((v, i) => { if (!v) { tab[i] = 'X'; best = Math.min(best, minimax(tab, depth+1, true)); tab[i] = ''; } });
+                return best;
+            }
+        }
+
+        function checarVitoriaTab(tab, p) {
+            return LINHAS_VITORIA.some(l => l.every(i => tab[i] === p));
+        }
+
+        modo = 'ia';
+        novoJogo();
+    </script>
+</body>
+</html>

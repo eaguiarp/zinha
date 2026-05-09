@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Memória — Zinha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 30px 20px; text-align: center; }
+        .back { display: inline-block; margin-bottom: 20px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #c2185b; margin-bottom: 4px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+        .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat { background: white; border-radius: 10px; padding: 10px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .stat span { display: block; font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat strong { font-size: 22px; color: #c2185b; }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto 24px;
+        }
+        .card-wrap { perspective: 600px; }
+        .card-inner {
+            width: 100%; padding-bottom: 100%;
+            position: relative; transform-style: preserve-3d;
+            transition: transform 0.4s ease; cursor: pointer;
+            transform: rotateY(180deg);
+        }
+        .card-inner.virado { transform: rotateY(0deg); }
+        .card-inner.matched { transform: rotateY(0deg); cursor: default; }
+        .card-face {
+            position: absolute; inset: 0;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; backface-visibility: hidden;
+        }
+        .card-front { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card-back  { background: linear-gradient(135deg, #c2185b, #e91e63); transform: rotateY(180deg); }
+        .card-back::after { content: '🌸'; font-size: 22px; }
+        .card-inner.matched .card-front { background: #fce4ec; }
+
+        .btn { background: linear-gradient(135deg, #c2185b, #e91e63); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(194,24,91,0.4); }
+
+        .mensagem { display: none; margin-top: 16px; font-size: 16px; color: #c2185b; font-weight: bold; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/passatempo/jogos/" class="back">← Voltar aos Jogos</a>
+    <h1>🃏 Jogo da Memória</h1>
+    <p class="subtitle">Encontre todos os pares com o menor número de tentativas.</p>
+
+    <div class="stats">
+        <div class="stat"><span>Tentativas</span><strong id="tentativas">0</strong></div>
+        <div class="stat"><span>Pares</span><strong id="pares">0 / 8</strong></div>
+        <div class="stat"><span>Recorde</span><strong id="recorde">—</strong></div>
+    </div>
+
+    <div class="board" id="board"></div>
+    <button class="btn" onclick="novoJogo()">🔀 Novo Jogo</button>
+    <p class="mensagem" id="mensagem"></p>
+
+    <script>
+        const EMOJIS = ['🐶','🐱','🐭','🦊','🐻','🐼','🐨','🦁'];
+        let viradas = [], matched = 0, tentativas = 0, bloqueado = false;
+
+        function novoJogo() {
+            const pares = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+            viradas = []; matched = 0; tentativas = 0; bloqueado = false;
+            document.getElementById('tentativas').textContent = 0;
+            document.getElementById('pares').textContent = '0 / 8';
+            document.getElementById('mensagem').style.display = 'none';
+
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            pares.forEach((emoji, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'card-wrap';
+                wrap.innerHTML = `
+                    <div class="card-inner" id="c${i}" onclick="virar(${i}, '${emoji}')">
+                        <div class="card-face card-front">${emoji}</div>
+                        <div class="card-face card-back"></div>
+                    </div>`;
+                board.appendChild(wrap);
+            });
+        }
+
+        function virar(idx, emoji) {
+            if (bloqueado) return;
+            const el = document.getElementById('c' + idx);
+            if (el.classList.contains('virado') || el.classList.contains('matched')) return;
+
+            el.classList.add('virado');
+            viradas.push({ idx, emoji, el });
+
+            if (viradas.length === 2) {
+                bloqueado = true;
+                tentativas++;
+                document.getElementById('tentativas').textContent = tentativas;
+
+                if (viradas[0].emoji === viradas[1].emoji) {
+                    viradas.forEach(c => c.el.classList.replace('virado', 'matched'));
+                    matched++;
+                    document.getElementById('pares').textContent = matched + ' / 8';
+                    viradas = []; bloqueado = false;
+
+                    if (matched === 8) {
+                        const rec = localStorage.getItem('mem_recorde');
+                        if (!rec || tentativas < parseInt(rec)) {
+                            localStorage.setItem('mem_recorde', tentativas);
+                            document.getElementById('recorde').textContent = tentativas;
+                        }
+                        const msg = document.getElementById('mensagem');
+                        msg.textContent = `🎉 Parabéns! Você completou em ${tentativas} tentativas!`;
+                        msg.style.display = 'block';
+                    }
+                } else {
+                    setTimeout(() => {
+                        viradas.forEach(c => c.el.classList.remove('virado'));
+                        viradas = []; bloqueado = false;
+                    }, 900);
+                }
+            }
+        }
+
+        // Carrega recorde
+        const rec = localStorage.getItem('mem_recorde');
+        if (rec) document.getElementById('recorde').textContent = rec;
+
+        novoJogo();
+    </script>
+</body>
+</html>

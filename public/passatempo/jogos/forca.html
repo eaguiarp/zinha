@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forca — Zinha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 30px 20px; text-align: center; }
+        .back { display: inline-block; margin-bottom: 20px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #512da8; margin-bottom: 4px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+        .forca-svg { margin: 0 auto 20px; display: block; }
+
+        .palavra {
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .letra {
+            width: 36px; height: 44px;
+            border-bottom: 3px solid #512da8;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: bold; color: #512da8;
+            text-transform: uppercase;
+        }
+
+        .teclado {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 6px; max-width: 400px; margin: 0 auto 20px;
+        }
+        .tecla {
+            width: 38px; height: 38px; border: none; border-radius: 6px;
+            background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 14px; font-weight: bold; color: #333;
+            cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+        }
+        .tecla:hover:not(:disabled) { background: #ede7f6; color: #512da8; }
+        .tecla:disabled { cursor: default; opacity: 0.35; }
+        .tecla.acerto { background: #e8f5e9; color: #2e7d32; }
+        .tecla.erro   { background: #ffebee; color: #c62828; }
+
+        .info { font-size: 14px; color: #888; margin-bottom: 16px; }
+        .info strong { color: #512da8; }
+
+        .btn { background: linear-gradient(135deg, #512da8, #7b1fa2); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(81,45,168,0.4); }
+
+        .mensagem { display: none; margin: 16px 0; font-size: 17px; font-weight: bold; animation: fadeIn 0.4s; }
+        .mensagem.vitoria { color: #2e7d32; }
+        .mensagem.derrota { color: #c62828; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .dica { font-size: 13px; color: #aaa; margin-bottom: 16px; font-style: italic; }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/passatempo/jogos/" class="back">← Voltar aos Jogos</a>
+    <h1>🪢 Forca</h1>
+    <p class="subtitle">Adivinhe a palavra antes de usar todas as tentativas.</p>
+
+    <svg class="forca-svg" id="forcaSvg" width="160" height="180" viewBox="0 0 160 180">
+        <!-- Base e estrutura -->
+        <line x1="20" y1="170" x2="140" y2="170" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+        <line x1="50" y1="170" x2="50" y2="10"  stroke="#888" stroke-width="4" stroke-linecap="round"/>
+        <line x1="50" y1="10"  x2="110" y2="10" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+        <line x1="110" y1="10" x2="110" y2="30" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+        <!-- Boneco (partes adicionadas via JS) -->
+        <circle id="p1" cx="110" cy="44" r="14" stroke="#c62828" stroke-width="3" fill="none" opacity="0"/>
+        <line   id="p2" x1="110" y1="58" x2="110" y2="105" stroke="#c62828" stroke-width="3" stroke-linecap="round" opacity="0"/>
+        <line   id="p3" x1="110" y1="70" x2="85"  y2="88"  stroke="#c62828" stroke-width="3" stroke-linecap="round" opacity="0"/>
+        <line   id="p4" x1="110" y1="70" x2="135" y2="88"  stroke="#c62828" stroke-width="3" stroke-linecap="round" opacity="0"/>
+        <line   id="p5" x1="110" y1="105" x2="88" y2="135" stroke="#c62828" stroke-width="3" stroke-linecap="round" opacity="0"/>
+        <line   id="p6" x1="110" y1="105" x2="132" y2="135" stroke="#c62828" stroke-width="3" stroke-linecap="round" opacity="0"/>
+    </svg>
+
+    <div class="dica" id="dica"></div>
+    <div class="palavra" id="palavra"></div>
+    <p class="info">Erros: <strong id="erros">0</strong> / 6</p>
+    <div class="mensagem" id="mensagem"></div>
+    <div class="teclado" id="teclado"></div>
+    <button class="btn" onclick="novoJogo()">🔁 Nova Palavra</button>
+
+    <script>
+        const PALAVRAS = [
+            { palavra: 'ABACAXI',     dica: '🍍 Fruta tropical' },
+            { palavra: 'BORBOLETA',   dica: '🦋 Inseto colorido' },
+            { palavra: 'CHOCOLATE',   dica: '🍫 Doce irresistível' },
+            { palavra: 'DINOSSAURO',  dica: '🦕 Animal extinto' },
+            { palavra: 'ELEFANTE',    dica: '🐘 Maior animal terrestre' },
+            { palavra: 'FOGUETE',     dica: '🚀 Vai ao espaço' },
+            { palavra: 'GIRASSOL',    dica: '🌻 Flor que segue o sol' },
+            { palavra: 'HIPOPOTAMO',  dica: '🦛 Vive perto de rios' },
+            { palavra: 'INDONESIA',   dica: '🌏 País da Ásia' },
+            { palavra: 'JACARANDA',   dica: '🌲 Árvore brasileira' },
+            { palavra: 'KARATE',      dica: '🥋 Arte marcial' },
+            { palavra: 'LAGOSTA',     dica: '🦞 Fruto do mar' },
+            { palavra: 'MACARRAO',    dica: '🍝 Massa italiana' },
+            { palavra: 'NEVOEIRO',    dica: '🌫️ Fenômeno climático' },
+            { palavra: 'OCEANO',      dica: '🌊 Grande massa de água' },
+            { palavra: 'PINGUIM',     dica: '🐧 Ave que não voa' },
+            { palavra: 'QUEIJO',      dica: '🧀 Derivado do leite' },
+            { palavra: 'RELAMPAGO',   dica: '⚡ Luz no céu durante tempestade' },
+            { palavra: 'SUBMARINO',   dica: '🚢 Navega debaixo d\'água' },
+            { palavra: 'TARTARUGA',   dica: '🐢 Réptil de casco' },
+            { palavra: 'UNIVERSO',    dica: '🌌 Tudo o que existe' },
+            { palavra: 'VIOLONCELO',  dica: '🎻 Instrumento de cordas' },
+            { palavra: 'XADREZ',      dica: '♟️ Jogo de estratégia' },
+            { palavra: 'ZOOLOGICO',   dica: '🦒 Parque com animais' },
+        ];
+
+        const PARTES = ['p1','p2','p3','p4','p5','p6'];
+        let palavraAtual, letrasCorretas, erros, jogoAtivo;
+
+        function novoJogo() {
+            const sorteio = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
+            palavraAtual   = sorteio.palavra;
+            letrasCorretas = new Set();
+            erros          = 0;
+            jogoAtivo      = true;
+
+            document.getElementById('dica').textContent = 'Dica: ' + sorteio.dica;
+            document.getElementById('erros').textContent = 0;
+            document.getElementById('mensagem').style.display = 'none';
+            PARTES.forEach(id => document.getElementById(id).style.opacity = 0);
+            renderPalavra();
+            renderTeclado();
+        }
+
+        function renderPalavra() {
+            const div = document.getElementById('palavra');
+            div.innerHTML = '';
+            palavraAtual.split('').forEach(l => {
+                const span = document.createElement('span');
+                span.className = 'letra';
+                span.textContent = letrasCorretas.has(l) ? l : '';
+                div.appendChild(span);
+            });
+        }
+
+        function renderTeclado() {
+            const div = document.getElementById('teclado');
+            div.innerHTML = '';
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l => {
+                const btn = document.createElement('button');
+                btn.className = 'tecla';
+                btn.textContent = l;
+                btn.onclick = () => chutar(l);
+                div.appendChild(btn);
+            });
+        }
+
+        function chutar(letra) {
+            if (!jogoAtivo) return;
+            const tecla = [...document.querySelectorAll('.tecla')]
+                .find(b => b.textContent === letra);
+            if (tecla) tecla.disabled = true;
+
+            if (palavraAtual.includes(letra)) {
+                letrasCorretas.add(letra);
+                if (tecla) tecla.classList.add('acerto');
+                renderPalavra();
+                if ([...palavraAtual].every(l => letrasCorretas.has(l))) {
+                    fim('vitoria');
+                }
+            } else {
+                erros++;
+                if (tecla) tecla.classList.add('erro');
+                document.getElementById('erros').textContent = erros;
+                document.getElementById('p' + erros).style.opacity = 1;
+                if (erros === 6) fim('derrota');
+            }
+        }
+
+        function fim(tipo) {
+            jogoAtivo = false;
+            const msg = document.getElementById('mensagem');
+            msg.className = 'mensagem ' + tipo;
+            msg.style.display = 'block';
+            if (tipo === 'vitoria') {
+                msg.textContent = '🎉 Parabéns! Você acertou!';
+            } else {
+                // Revela a palavra
+                [...palavraAtual].forEach(l => letrasCorretas.add(l));
+                renderPalavra();
+                msg.textContent = `😢 Era: ${palavraAtual}`;
+            }
+            document.querySelectorAll('.tecla').forEach(b => b.disabled = true);
+        }
+
+        document.addEventListener('keydown', e => {
+            const l = e.key.toUpperCase();
+            if (/^[A-Z]$/.test(l)) chutar(l);
+        });
+
+        novoJogo();
+    </script>
+</body>
+</html>

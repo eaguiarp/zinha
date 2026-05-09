@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Reflexo — Zinha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 30px 20px; text-align: center; }
+        .back { display: inline-block; margin-bottom: 20px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #00695c; margin-bottom: 4px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 24px; }
+
+        #arena {
+            width: 100%; max-width: 480px; height: 260px;
+            margin: 0 auto 24px;
+            border-radius: 16px; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.15s;
+            user-select: none;
+            background: #b2dfdb;
+        }
+        #arena.espera   { background: #ef9a9a; }
+        #arena.pronto   { background: #a5d6a7; }
+        #arena.cedo     { background: #ffcc02; }
+
+        #arena-texto { font-size: 22px; font-weight: bold; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none; }
+        #arena-sub   { font-size: 14px; color: rgba(255,255,255,0.85); margin-top: 8px; pointer-events: none; }
+
+        .stats { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .stat { background: white; padding: 10px 18px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); min-width: 90px; }
+        .stat span { display: block; font-size: 11px; color: #aaa; text-transform: uppercase; }
+        .stat strong { font-size: 22px; color: #00695c; }
+
+        .historico { max-width: 480px; margin: 0 auto; }
+        .historico h3 { font-size: 13px; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .barras { display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 80px; }
+        .barra-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .barra { width: 28px; border-radius: 4px 4px 0 0; background: #80cbc4; transition: height 0.3s; min-height: 4px; }
+        .barra.melhor { background: #00695c; }
+        .barra-val { font-size: 10px; color: #888; }
+
+        .classificacao { font-size: 14px; color: #666; margin-top: 12px; }
+        .classificacao strong { color: #00695c; }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/passatempo/jogos/" class="back">← Voltar aos Jogos</a>
+    <h1>👆 Teste de Reflexo</h1>
+    <p class="subtitle">Clique assim que a tela ficar verde. Descubra seu tempo de reação.</p>
+
+    <div class="stats">
+        <div class="stat"><span>Última</span><strong id="ultima">—</strong></div>
+        <div class="stat"><span>Melhor</span><strong id="melhor">—</strong></div>
+        <div class="stat"><span>Média</span><strong id="media">—</strong></div>
+    </div>
+
+    <div id="arena" onclick="clicar()">
+        <div id="arena-texto">Clique para começar</div>
+        <div id="arena-sub"></div>
+    </div>
+
+    <div class="historico">
+        <h3>Últimas tentativas</h3>
+        <div class="barras" id="barras"></div>
+    </div>
+    <div class="classificacao" id="classif"></div>
+
+    <script>
+        const FASES = { idle: 'idle', espera: 'espera', pronto: 'pronto', resultado: 'resultado', cedo: 'cedo' };
+        let fase = FASES.idle, timerEspera, t0;
+        let historico = [];
+        const MAX_HIST = 8;
+
+        const arena    = document.getElementById('arena');
+        const textoEl  = document.getElementById('arena-texto');
+        const subEl    = document.getElementById('arena-sub');
+
+        function clicar() {
+            if (fase === FASES.idle || fase === FASES.resultado || fase === FASES.cedo) {
+                iniciar();
+            } else if (fase === FASES.espera) {
+                // Clicou cedo demais
+                clearTimeout(timerEspera);
+                fase = FASES.cedo;
+                arena.className = 'cedo';
+                textoEl.textContent = '⚠️ Cedo demais!';
+                subEl.textContent = 'Aguarde a tela ficar verde. Clique para tentar de novo.';
+            } else if (fase === FASES.pronto) {
+                const ms = Date.now() - t0;
+                registrar(ms);
+            }
+        }
+
+        function iniciar() {
+            fase = FASES.espera;
+            arena.className = 'espera';
+            textoEl.textContent = 'Aguarde...';
+            subEl.textContent = 'Não clique ainda!';
+            const delay = 1500 + Math.random() * 3500;
+            timerEspera = setTimeout(() => {
+                fase = FASES.pronto;
+                t0   = Date.now();
+                arena.className = 'pronto';
+                textoEl.textContent = 'CLIQUE AGORA!';
+                subEl.textContent = '';
+            }, delay);
+        }
+
+        function registrar(ms) {
+            fase = FASES.resultado;
+            arena.className = '';
+            textoEl.textContent = ms + ' ms';
+            subEl.textContent = classificar(ms) + ' — Clique para tentar de novo';
+
+            historico.push(ms);
+            if (historico.length > MAX_HIST) historico.shift();
+
+            const melhorVal = Math.min(...historico);
+            const mediaVal  = Math.round(historico.reduce((a,b) => a+b, 0) / historico.length);
+
+            document.getElementById('ultima').textContent = ms + 'ms';
+            document.getElementById('melhor').textContent = melhorVal + 'ms';
+            document.getElementById('media').textContent  = mediaVal + 'ms';
+            document.getElementById('classif').innerHTML  =
+                `Classificação: <strong>${classificar(ms)}</strong>`;
+
+            renderBarras(melhorVal);
+        }
+
+        function classificar(ms) {
+            if (ms < 150) return '🏆 Incrível';
+            if (ms < 200) return '⚡ Excelente';
+            if (ms < 250) return '✅ Bom';
+            if (ms < 300) return '👍 Normal';
+            if (ms < 400) return '🙂 Razoável';
+            return '😅 Treine mais';
+        }
+
+        function renderBarras(melhorVal) {
+            const div = document.getElementById('barras');
+            div.innerHTML = '';
+            const maxH = Math.max(...historico);
+            historico.forEach(v => {
+                const wrap = document.createElement('div');
+                wrap.className = 'barra-wrap';
+                const h = Math.max(4, Math.round((v / maxH) * 72));
+                wrap.innerHTML = `
+                    <div class="barra${v === melhorVal ? ' melhor' : ''}" style="height:${h}px"></div>
+                    <div class="barra-val">${v}</div>`;
+                div.appendChild(wrap);
+            });
+        }
+    </script>
+</body>
+</html>

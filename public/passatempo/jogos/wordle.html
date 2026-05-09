@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavrinha — Zinha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 30px 20px; text-align: center; }
+        .back { display: inline-block; margin-bottom: 20px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #2e7d32; margin-bottom: 4px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 6px; }
+        .legenda { display: flex; justify-content: center; gap: 16px; font-size: 12px; color: #888; margin-bottom: 20px; flex-wrap: wrap; }
+        .legenda span { display: flex; align-items: center; gap: 5px; }
+        .leg-box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+        #grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: 6px; max-width: 300px; margin: 0 auto 20px; }
+        .linha { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .cell {
+            width: 100%; padding-bottom: 100%; position: relative;
+            border: 2px solid #ccc; border-radius: 6px; background: white;
+            font-size: 22px; font-weight: bold; color: #333;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .cell span {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            text-transform: uppercase;
+        }
+        .cell.ativa { border-color: #2e7d32; }
+        .cell.correta  { background: #388e3c; border-color: #388e3c; color: white; }
+        .cell.presente { background: #f9a825; border-color: #f9a825; color: white; }
+        .cell.ausente  { background: #9e9e9e; border-color: #9e9e9e; color: white; }
+        .cell.pop { animation: pop 0.1s ease; }
+        @keyframes pop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+        .cell.shake { animation: shake 0.4s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} }
+
+        .teclado { display: flex; flex-direction: column; gap: 6px; align-items: center; margin-bottom: 20px; }
+        .teclado-linha { display: flex; gap: 5px; }
+        .tecla {
+            height: 42px; min-width: 32px; padding: 0 6px;
+            border: none; border-radius: 5px; background: #ddd;
+            font-size: 13px; font-weight: bold; color: #333;
+            cursor: pointer; transition: background 0.2s;
+            text-transform: uppercase;
+        }
+        .tecla.correta  { background: #388e3c; color: white; }
+        .tecla.presente { background: #f9a825; color: white; }
+        .tecla.ausente  { background: #9e9e9e; color: white; }
+        .tecla.wide { min-width: 52px; font-size: 12px; }
+
+        .mensagem { font-size: 16px; font-weight: bold; min-height: 24px; margin-bottom: 12px; color: #2e7d32; }
+        .btn { background: linear-gradient(135deg, #2e7d32, #43a047); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(46,125,50,0.4); }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/passatempo/jogos/" class="back">← Voltar aos Jogos</a>
+    <h1>🟩 Palavrinha</h1>
+    <p class="subtitle">Adivinhe a palavra de 5 letras em até 6 tentativas.</p>
+    <div class="legenda">
+        <span><span class="leg-box" style="background:#388e3c"></span> Letra correta</span>
+        <span><span class="leg-box" style="background:#f9a825"></span> Letra errada de lugar</span>
+        <span><span class="leg-box" style="background:#9e9e9e"></span> Letra ausente</span>
+    </div>
+
+    <div id="grid"></div>
+    <p class="mensagem" id="msg"></p>
+    <div class="teclado" id="teclado"></div>
+    <button class="btn" onclick="novoJogo()">🔁 Nova Palavra</button>
+
+    <script>
+    const PALAVRAS = [
+        'BANCO','BARCO','BILHA','BOLSA','BURRO','CABRA','CAMPO','CANTO',
+        'CARTA','CASCA','CERTO','CHAVE','CIRCO','COISA','COLAR','CONTO',
+        'CORPO','CORVO','COSTA','CREME','CUNHA','CURVA','DANÇA','DUPLO',
+        'FAIXA','FALSO','FARSA','FLOCO','FLOR','FOLHA','FORNO','FORTE',
+        'FRACO','FRADE','FRUTA','FUNIL','GARRA','GASTO','GENTE','GLOBO',
+        'GORDO','GRADE','GREVE','GRUPO','GUARDA','GUIZO','HERÓI','HONRA',
+        'HUMOR','IDEAL','ILHA','IMAGEM','INÍCIO','JUNTO','LANÇA','LARGO',
+        'LIÇÃO','LINDO','LOUCO','LUGAR','LUTOU','MAÇÃ','MAIOR','MANGA',
+        'MANSO','MARCO','MASSA','MÉDIO','MELÃO','MENOR','MENTE','MESTRE',
+        'MIRRA','MOEDA','MONTE','MORAL','NOBRE','NOITE','NORTE','NOVOS',
+        'NUVEM','OLHAR','OUTRO','PADRE','PALMA','PAPAL','PARES','PARGO',
+        'PARTE','PASTA','PEDRA','PELHE','PENTE','PERDA','PLANO','POBRE',
+        'POEMA','PONTO','PORTA','PRAÇA','PRATO','PRAZO','PRETO','PRIMO',
+        'PROVA','PUROS','QUADRO','QUEDA','RÁDIO','RAIVA','RASGO','RAZÃO',
+        'RENDA','REPOR','RESTA','RITMO','ROBÔ','ROSTO','ROUBO','RUÍDO',
+        'SABOR','SAFRA','SALTO','SAMBA','SAÚDE','SENSO','SIGNO','SILVO',
+        'SONHO','SORTE','SUAVE','SURTO','TÁBUA','TALCO','TARDE','TARSO',
+        'TECTO','TERNO','TERMO','TIMÃO','TÍTULO','TORTA','TOTAL','TOUCA',
+        'TROÇO','TURMA','ÚNICO','UNTAR','VAGEM','VALOR','VERDE','VERSO',
+        'VÍCIO','VILAS','VIOLA','VISÃO','VISTA','VIVER','VOLTA','ZEROO'
+    ].map(p => p.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase());
+
+    const LINHAS_TECLADO = ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+
+    let palavraAlvo, tentativaAtual, letraAtual, jogoAtivo;
+    let celulas = [], estadoTeclas = {};
+
+    function novoJogo() {
+        palavraAlvo  = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
+        tentativaAtual = 0; letraAtual = 0; jogoAtivo = true;
+        estadoTeclas = {};
+        document.getElementById('msg').textContent = '';
+        buildGrid(); buildTeclado();
+    }
+
+    function buildGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = ''; celulas = [];
+        for (let r = 0; r < 6; r++) {
+            const linha = document.createElement('div');
+            linha.className = 'linha';
+            const row = [];
+            for (let c = 0; c < 5; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.innerHTML = '<span></span>';
+                linha.appendChild(cell); row.push(cell);
+            }
+            grid.appendChild(linha); celulas.push(row);
+        }
+    }
+
+    function buildTeclado() {
+        const div = document.getElementById('teclado');
+        div.innerHTML = '';
+        LINHAS_TECLADO.forEach((linha, i) => {
+            const row = document.createElement('div');
+            row.className = 'teclado-linha';
+            if (i === 2) {
+                row.appendChild(makeTecla('⌫', 'wide', () => apagar()));
+            }
+            linha.split('').forEach(l => row.appendChild(makeTecla(l, '', () => inserir(l))));
+            if (i === 2) {
+                row.appendChild(makeTecla('↵', 'wide', () => confirmar()));
+            }
+            div.appendChild(row);
+        });
+    }
+
+    function makeTecla(texto, extra, fn) {
+        const btn = document.createElement('button');
+        btn.className = 'tecla ' + extra;
+        btn.textContent = texto;
+        btn.id = 'k_' + texto;
+        btn.onclick = fn;
+        return btn;
+    }
+
+    function inserir(letra) {
+        if (!jogoAtivo || letraAtual >= 5) return;
+        const cell = celulas[tentativaAtual][letraAtual];
+        cell.querySelector('span').textContent = letra;
+        cell.classList.add('pop');
+        setTimeout(() => cell.classList.remove('pop'), 150);
+        letraAtual++;
+    }
+
+    function apagar() {
+        if (!jogoAtivo || letraAtual === 0) return;
+        letraAtual--;
+        celulas[tentativaAtual][letraAtual].querySelector('span').textContent = '';
+    }
+
+    function confirmar() {
+        if (!jogoAtivo || letraAtual < 5) {
+            celulas[tentativaAtual].forEach(c => {
+                c.classList.add('shake');
+                setTimeout(() => c.classList.remove('shake'), 400);
+            });
+            return;
+        }
+        const tentativa = celulas[tentativaAtual].map(c => c.querySelector('span').textContent).join('');
+        const resultado = avaliar(tentativa);
+        animar(resultado);
+        atualizarTeclas(tentativa, resultado);
+
+        if (resultado.every(r => r === 'correta')) {
+            jogoAtivo = false;
+            setTimeout(() => document.getElementById('msg').textContent = '🎉 Acertou!', 1800);
+        } else if (tentativaAtual === 5) {
+            jogoAtivo = false;
+            setTimeout(() => document.getElementById('msg').textContent = `A palavra era: ${palavraAlvo}`, 1800);
+        }
+        tentativaAtual++; letraAtual = 0;
+    }
+
+    function avaliar(tentativa) {
+        const alvo   = palavraAlvo.split('');
+        const res    = Array(5).fill('ausente');
+        const usados = Array(5).fill(false);
+
+        // 1ª passagem: corretas
+        tentativa.split('').forEach((l, i) => {
+            if (l === alvo[i]) { res[i] = 'correta'; usados[i] = true; }
+        });
+        // 2ª passagem: presentes
+        tentativa.split('').forEach((l, i) => {
+            if (res[i] === 'correta') return;
+            const j = alvo.findIndex((a, k) => a === l && !usados[k]);
+            if (j !== -1) { res[i] = 'presente'; usados[j] = true; }
+        });
+        return res;
+    }
+
+    function animar(resultado) {
+        resultado.forEach((tipo, i) => {
+            setTimeout(() => {
+                celulas[tentativaAtual][i].classList.add(tipo);
+            }, i * 250);
+        });
+    }
+
+    function atualizarTeclas(tentativa, resultado) {
+        const prioridade = { correta: 3, presente: 2, ausente: 1 };
+        tentativa.split('').forEach((l, i) => {
+            const tipo = resultado[i];
+            if (!estadoTeclas[l] || prioridade[tipo] > prioridade[estadoTeclas[l]]) {
+                estadoTeclas[l] = tipo;
+                const btn = document.getElementById('k_' + l);
+                if (btn) { btn.className = 'tecla ' + tipo; }
+            }
+        });
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Backspace') { apagar(); return; }
+        if (e.key === 'Enter')     { confirmar(); return; }
+        const l = e.key.toUpperCase();
+        if (/^[A-Z]$/.test(l)) inserir(l);
+    });
+
+    novoJogo();
+    </script>
+</body>
+</html>

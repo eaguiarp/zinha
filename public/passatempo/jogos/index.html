@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos & Passatempos — Zinha</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; text-align: center; padding: 50px 20px; }
+        .back { display: inline-block; margin-bottom: 30px; color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #c2185b; margin-bottom: 8px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .card { background: white; padding: 28px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-6px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .card h3 { margin: 10px 0 8px; color: #c2185b; font-size: 17px; }
+        .card p { color: #666; font-size: 14px; margin: 0; flex-grow: 1; }
+        .badge { display: inline-block; background: #fce4ec; color: #c2185b; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
+        .icon { font-size: 36px; margin-bottom: 8px; }
+        .dificuldade { margin-top: 12px; font-size: 12px; color: #aaa; }
+    </style>
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <a href="/utilitarios/" class="back">← Voltar aos Utilitários</a>
+    <h1>🎮 Jogos & Passatempos</h1>
+    <p class="subtitle">Uma pausa rápida e divertida no seu dia — sem instalação, sem cadastro.</p>
+
+    <div class="grid">
+        <a href="/passatempo/jogos/2048/" class="card">
+            <div class="icon">🟨</div>
+            <span class="badge">Puzzle</span>
+            <h3>2048</h3>
+            <p>Combine os blocos e chegue ao número 2048. Simples de aprender, difícil de parar.</p>
+            <div class="dificuldade">⭐⭐⭐ Médio</div>
+        </a>
+        <a href="/passatempo/jogos/memoria/" class="card">
+            <div class="icon">🃏</div>
+            <span class="badge">Memória</span>
+            <h3>Jogo da Memória</h3>
+            <p>Encontre os pares de cartas no menor número de tentativas. Treina concentração e memória.</p>
+            <div class="dificuldade">⭐⭐ Fácil</div>
+        </a>
+        <a href="/passatempo/jogos/forca/" class="card">
+            <div class="icon">🪢</div>
+            <span class="badge">Palavras</span>
+            <h3>Forca</h3>
+            <p>Adivinhe a palavra oculta letra por letra antes de esgotar as tentativas. Clássico!</p>
+            <div class="dificuldade">⭐⭐ Fácil</div>
+        </a>
+        <a href="/passatempo/jogos/wordle/" class="card">
+            <div class="icon">🟩</div>
+            <span class="badge">Palavras</span>
+            <h3>Palavrinha</h3>
+            <p>Adivinhe a palavra de 5 letras em até 6 tentativas. Inspirado no Wordle, em português.</p>
+            <div class="dificuldade">⭐⭐⭐ Médio</div>
+        </a>
+        <a href="/passatempo/jogos/velha/" class="card">
+            <div class="icon">❌</div>
+            <span class="badge">Clássico</span>
+            <h3>Jogo da Velha</h3>
+            <p>O eterno duelo do X contra O. Jogue contra um amigo ou desafie a IA.</p>
+            <div class="dificuldade">⭐ Fácil</div>
+        </a>
+        <a href="/passatempo/jogos/clicker/" class="card">
+            <div class="icon">👆</div>
+            <span class="badge">Reflexo</span>
+            <h3>Teste de Reflexo</h3>
+            <p>Clique assim que a tela mudar de cor. Descubra seu tempo de reação em milissegundos.</p>
+            <div class="dificuldade">⭐ Fácil</div>
+        </a>
+    </div>
+</body>
+</html>
