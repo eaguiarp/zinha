@@ -347,20 +347,18 @@
         const totalGeral = document.getElementById('totalGeral').textContent;
         const totalHoras = document.getElementById('totalHorasExtras').textContent;
         
-        const texto = `💰 Fiz meu cálculo de Horas Extras com a ajuda da Zinha!\n⏱️ Total de Horas: ${totalHoras}\n💵 Total a Receber (Bruto): ${totalGeral}\n\nCalcule você também em: https://zinha.com.br/horas/`;
+        const texto = `⏱️ Minhas Horas Extras na Zinha\n\n⏰ Total de Horas: ${totalHoras}\n💰 Total a Receber: ${totalGeral}\n\nCalcule a sua também:\nhttps://zinha.com.br/horas/`;
 
-        // Verifica se o navegador tem suporte para o menu de compartilhamento nativo (como no celular)
         if (navigator.share) {
             navigator.share({
                 title: 'Meu Cálculo de Horas Extras',
                 text: texto
             }).catch((error) => console.log('Erro ao compartilhar', error));
         } else {
-            // Se estiver no PC e não tiver menu nativo, copia o texto
             navigator.clipboard.writeText(texto).then(() => {
-                alert("Resumo copiado! Agora é só colar no WhatsApp ou onde desejar.");
+                alert("✅ Copiado! Cole onde quiser.");
             }).catch(err => {
-                alert("Erro ao copiar o resumo.");
+                alert("❌ Erro ao copiar.");
             });
         }
     }

@@ -145,8 +145,16 @@
         const tot = document.getElementById('rTotal').textContent;
         const pct = document.getElementById('gorjetaPct').value;
         const p   = document.getElementById('pessoas').value;
-        const t = `🍽️ Calculei a conta na Zinha!\n\nTotal com gorjeta (${pct}%): ${tot}\n💳 Cada um paga: ${pp} (${p} pessoas)\n\nCalcule a sua: zinha.com.br/utilitarios/gorjeta/`;
-        navigator.share ? navigator.share({title:'Divisão da Conta',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado! Cole no grupo do WhatsApp.'));
+        const texto = `🍽️ Divisão de Conta na Zinha\n\n💵 Total com gorjeta (${pct}%): ${tot}\n💳 Por pessoa (${p} pessoas): ${pp}\n\nCalcule a sua também:\nhttps://zinha.com.br/utilitarios/gorjeta/`;
+        if (navigator.share) {
+            navigator.share({title: 'Divisão da Conta', text: texto}).catch(err => console.log('Erro ao compartilhar', err));
+        } else {
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('✅ Copiado! Cole onde quiser.');
+            }).catch(() => {
+                alert('❌ Erro ao copiar.');
+            });
+        }
     }
 
     calcular();

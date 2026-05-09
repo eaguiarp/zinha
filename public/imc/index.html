@@ -231,7 +231,7 @@ function compartilharIMC() {
     const imc = document.getElementById('valorIMC').textContent;
     const classe = document.getElementById('classIMC').textContent;
     
-    const texto = `📊 Meu IMC na Zinha!\n✅ Resultado: ${imc}\n⚖️ Classificação: ${classe}\n\nCalcule o seu também em: https://zinha.com.br/imc/`;
+    const texto = `📊 Meu IMC na Zinha\n\n⚖️ IMC: ${imc}\n📈 Classificação: ${classe}\n\nDescubra o seu também:\nhttps://zinha.com.br/imc/`;
 
     if (navigator.share) {
         navigator.share({
@@ -240,7 +240,9 @@ function compartilharIMC() {
         }).catch((error) => console.log('Erro ao compartilhar', error));
     } else {
         navigator.clipboard.writeText(texto).then(() => {
-            alert("Resumo copiado! Agora é só colar no WhatsApp.");
+            alert('✅ Copiado! Cole onde quiser.');
+        }).catch(() => {
+            alert('❌ Erro ao copiar.');
         });
     }
 }

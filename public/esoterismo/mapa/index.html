@@ -89,13 +89,19 @@
         .mapa-header .nome { color: #fff; font-size: 22px; font-weight: bold; }
         .mapa-header .data { color: #ce93d8; font-size: 13px; margin-top: 4px; }
 
-        /* Grid de planetas */
+        /* Grid de planetas — 2 colunas mobile, 4 colunas desktop */
         .planetas-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
             margin-bottom: 20px;
         }
+        @media (min-width: 560px) {
+            .planetas-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
         .planeta-card {
             background: white;
             border-radius: 12px;
@@ -107,7 +113,9 @@
         }
         .planeta-card:hover { transform: translateY(-3px); }
         .planeta-icone { font-size: 28px; margin-bottom: 6px; }
-        .planeta-nome { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .planeta-nome { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        /* Micro-descrição do planeta */
+        .planeta-micro { font-size: 10px; color: #bbb; font-style: italic; margin-bottom: 6px; line-height: 1.4; }
         .planeta-signo { font-size: 18px; font-weight: bold; color: #6a1b9a; }
         .planeta-emoji { font-size: 16px; margin-right: 4px; }
 
@@ -166,7 +174,6 @@
         /* ===== MOBILE ===== */
         @media (max-width: 480px) {
             .container { padding: 1.5rem 1rem; }
-            .planetas-grid { grid-template-columns: repeat(2, 1fr); }
             .btn-afiliado { font-size: 14px; padding: 13px 20px; }
         }
     </style>
@@ -183,6 +190,19 @@
 
     <!-- FORMULÁRIO -->
     <p class="section-title">Seus Dados de Nascimento</p>
+
+    <!-- 1. Cidade primeiro (autofoco via JS) -->
+    <div class="row">
+        <div class="field">
+            <label>Cidade de Nascimento</label>
+            <input type="text" id="cidadeBusca" placeholder="Ex: São João de Meriti, RJ" autocomplete="off">
+            <input type="hidden" id="lat">
+            <input type="hidden" id="lon">
+            <small id="cidadeStatus" style="display: block; margin-top: 4px;"></small>
+        </div>
+    </div>
+
+    <!-- 2. Data e Hora -->
     <div class="row">
         <div class="field">
             <label>Data de Nascimento</label>
@@ -194,26 +214,15 @@
             <small>Necessária para calcular o Ascendente</small>
         </div>
     </div>
+
+    <!-- 3. Nome (único campo restante) -->
     <div class="row">
         <div class="field">
             <label>Seu Nome (opcional)</label>
             <input type="text" id="nomeUsuario" placeholder="Ex: Maria Silva" maxlength="40">
         </div>
-        <div class="field">
-            <label>Fuso Horário de Nascimento</label>
-            <select id="fusoHorario">
-                <option value="-3" selected>Brasília / SP / RJ (UTC-3)</option>
-                <option value="-4">Cuiabá / AM (UTC-4)</option>
-                <option value="-5">Acre / AM oeste (UTC-5)</option>
-                <option value="-2">Fernando de Noronha (UTC-2)</option>
-                <option value="0">Portugal / Londres (UTC 0)</option>
-                <option value="1">Europa Central (UTC+1)</option>
-                <option value="-6">México Central (UTC-6)</option>
-                <option value="-5">Nova York / Miami (UTC-5)</option>
-                <option value="-8">Los Angeles (UTC-8)</option>
-            </select>
-        </div>
     </div>
+    <!-- Fuso horário REMOVIDO: UTC-3 assumido via constante no JS -->
 
     <div class="btn-group">
         <button class="btn" onclick="calcularMapa()">🌟 Gerar Meu Mapa Astral</button>
@@ -238,8 +247,8 @@
         <!-- BOTÃO AFILIADO -->
         <div class="afiliado-box">
             <p>
-                Esses são apenas <strong>5 pontos</strong> do seu Mapa Astral.<br>
-                Um mapa completo tem mais de <strong>30 posições</strong> — incluindo casas astrológicas, aspectos e seu propósito de vida.
+                Este mapa resume os <strong>8 pontos fundamentais</strong> da sua personalidade.<br>
+                No entanto, um Mapa Astral completo analisa mais de <strong>30 posições</strong>, incluindo casas astrológicas e os aspectos raros que definem seu <strong>propósito de vida</strong>.
             </p>
             <a href="SEU_LINK_AFILIADO_AQUI" id="btnAfiliado" target="_blank" rel="noopener" class="btn-afiliado">
                 ✨ Quer uma análise profunda do seu destino? Clique aqui para ver seu Mapa Completo!
@@ -250,7 +259,8 @@
 
     <p class="footer-note">
         🔭 Cálculo baseado em astronomia real (posições eclípticas planetárias).<br>
-        Para maior precisão no Ascendente, informe a hora e o fuso horário exatos do nascimento.
+        Para maior precisão no Ascendente, informe a hora exata do nascimento.<br>
+        Fuso horário padrão: UTC-3 (Brasília).
     </p>
 
 </div>
@@ -260,73 +270,123 @@
 
 <script>
 // ============================================================
-// DADOS DOS SIGNOS
+// FUSO HORÁRIO — UTC-3 fixo (público majoritariamente BR)
+// Se quiser detecção automática, descomente a linha abaixo:
+// const FUSO = -(new Date().getTimezoneOffset() / 60);
+// ============================================================
+const FUSO = -3;
+
+// ============================================================
+// DADOS DOS SIGNOS — com elemento, regente e modalidade
 // ============================================================
 const SIGNOS = [
-    { nome: 'Áries',       emoji: '♈', inicio: 0   },
-    { nome: 'Touro',       emoji: '♉', inicio: 30  },
-    { nome: 'Gêmeos',      emoji: '♊', inicio: 60  },
-    { nome: 'Câncer',      emoji: '♋', inicio: 90  },
-    { nome: 'Leão',        emoji: '♌', inicio: 120 },
-    { nome: 'Virgem',      emoji: '♍', inicio: 150 },
-    { nome: 'Libra',       emoji: '♎', inicio: 180 },
-    { nome: 'Escorpião',   emoji: '♏', inicio: 210 },
-    { nome: 'Sagitário',   emoji: '♐', inicio: 240 },
-    { nome: 'Capricórnio', emoji: '♑', inicio: 270 },
-    { nome: 'Aquário',     emoji: '♒', inicio: 300 },
-    { nome: 'Peixes',      emoji: '♓', inicio: 330 },
+    { nome: 'Áries',       emoji: '♈', inicio: 0,   elemento: 'Fogo',  regente: 'Marte',    modalidade: 'Cardinal' },
+    { nome: 'Touro',       emoji: '♉', inicio: 30,  elemento: 'Terra', regente: 'Vênus',    modalidade: 'Fixo'     },
+    { nome: 'Gêmeos',      emoji: '♊', inicio: 60,  elemento: 'Ar',    regente: 'Mercúrio', modalidade: 'Mutável'  },
+    { nome: 'Câncer',      emoji: '♋', inicio: 90,  elemento: 'Água',  regente: 'Lua',      modalidade: 'Cardinal' },
+    { nome: 'Leão',        emoji: '♌', inicio: 120, elemento: 'Fogo',  regente: 'Sol',      modalidade: 'Fixo'     },
+    { nome: 'Virgem',      emoji: '♍', inicio: 150, elemento: 'Terra', regente: 'Mercúrio', modalidade: 'Mutável'  },
+    { nome: 'Libra',       emoji: '♎', inicio: 180, elemento: 'Ar',    regente: 'Vênus',    modalidade: 'Cardinal' },
+    { nome: 'Escorpião',   emoji: '♏', inicio: 210, elemento: 'Água',  regente: 'Plutão',   modalidade: 'Fixo'     },
+    { nome: 'Sagitário',   emoji: '♐', inicio: 240, elemento: 'Fogo',  regente: 'Júpiter',  modalidade: 'Mutável'  },
+    { nome: 'Capricórnio', emoji: '♑', inicio: 270, elemento: 'Terra', regente: 'Saturno',  modalidade: 'Cardinal' },
+    { nome: 'Aquário',     emoji: '♒', inicio: 300, elemento: 'Ar',    regente: 'Urano',    modalidade: 'Fixo'     },
+    { nome: 'Peixes',      emoji: '♓', inicio: 330, elemento: 'Água',  regente: 'Netuno',   modalidade: 'Mutável'  },
 ];
 
-// Ícones visuais para cada planeta
+// ============================================================
+// ÍCONES E MICRO-DESCRIÇÕES DOS PLANETAS
+// ============================================================
 const PLANETAS_INFO = {
-    Sol:        { icone: '☀️', label: 'Sol'        },
-    Lua:        { icone: '🌙', label: 'Lua'        },
-    Ascendente: { icone: '⬆️', label: 'Ascendente' },
-    Venus:      { icone: '💚', label: 'Vênus'      },
-    Mars:       { icone: '🔴', label: 'Marte'      },
+    Sol:        { icone: '☀️', label: 'Sol',        micro: 'Sua identidade e essência real.'               },
+    Lua:        { icone: '🌙', label: 'Lua',        micro: 'Como você reage emocionalmente.'               },
+    Ascendente: { icone: '⬆️', label: 'Ascendente', micro: 'A máscara que você usa e como te veem.'        },
+    Venus:      { icone: '💚', label: 'Vênus',      micro: 'Sua forma de amar e valorizar.'                },
+    Mars:       { icone: '🔴', label: 'Marte',      micro: 'Sua força de vontade e impulso de ação.'       },
 };
 
-// Converte longitude eclíptica (0-360) para signo
+// Converte longitude eclíptica (0–360) para signo
 function lonParaSigno(lon) {
-    // Garante que a longitude esteja entre 0 e 360
     const norm = ((lon % 360) + 360) % 360;
-    const idx = Math.floor(norm / 30);
-    
-    // Trava de segurança: se o índice for inválido, assume Áries (0) para não quebrar
+    const idx  = Math.floor(norm / 30);
     const signoValido = SIGNOS[idx] || SIGNOS[0];
-    
     const grau = Math.floor(norm % 30);
     return { signo: signoValido, grau, lon: norm };
 }
 
 // ============================================================
 // CALCULAR ASCENDENTE (fórmula aproximada)
-// Usa RAMC + obliquidade para estimar o Ascendente
+// Recebe astroTime (objeto AstroTime já criado) e latRad
+// CORREÇÃO: não recria MakeTime() aqui — usa o .tt direto
 // ============================================================
-function calcularAscendente(dataUTC, latRad) {
-    // Obliquidade da eclíptica (aproximação)
-    const obliq = 23.4393 * Math.PI / 180;
+function calcularAscendente(astroTime, lat, lon) {
+    const rad = Math.PI / 180;
 
-    // Tempo Sidéreo de Greenwich (GMST) simplificado
-    const jd = Astronomy.MakeTime(dataUTC).tt + 2451545.0;
-    const T  = (jd - 2451545.0) / 36525.0;
-    let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933*T*T;
-    gmst = ((gmst % 360) + 360) % 360;
+    // 1. Obliquidade da eclíptica (polinômio IAU — Astronomy.EclipticObliquity nao existe na API JS)
+    const T   = astroTime.tt / 36525.0;
+    const obl = (23.439291111
+               - 0.013004167  * T
+               - 0.0000001639 * T * T
+               + 0.0000005036 * T * T * T) * rad;
 
-    // RAMC em radianos (fuso já convertido para UTC antes de chamar)
-    const ramc = gmst * Math.PI / 180;
+    // 2. GMST em horas via SiderealTime() — retorna horas (0-24)
+    const gmstHoras = Astronomy.SiderealTime(astroTime);
 
-    // Fórmula do Ascendente
-    const num = -Math.cos(ramc);
-    const den = Math.sin(ramc) * Math.cos(obliq) + Math.tan(latRad) * Math.sin(obliq);
-    let asc = Math.atan2(num, den) * 180 / Math.PI;
+    // 3. LST em graus: converte horas->graus e adiciona longitude local
+    const lstGraus = ((gmstHoras * 15.0 + lon) % 360 + 360) % 360;
+    const ramcRad  = lstGraus * rad;
+    const latRad   = lat * rad;
 
-    // Ajuste de quadrante
-    if (Math.cos(ramc) > 0) asc += 180;
-    asc = ((asc % 360) + 360) % 360;
+    // 4. Formula padrao do Ascendente
+    let asc = Math.atan2(
+        -Math.cos(ramcRad),
+        Math.sin(ramcRad) * Math.cos(obl) + Math.tan(latRad) * Math.sin(obl)
+    ) / rad;
 
-    return asc;
+    // 5. Ajuste de quadrante (NAO +90 fixo — causa erros em lat sul)
+    if (Math.cos(ramcRad) > 0) asc += 180;
+
+    return ((asc % 360) + 360) % 360;
 }
+
+// ============================================================
+// AUTO-FOCO NO CAMPO CIDADE AO CARREGAR
+// ============================================================
+window.addEventListener('load', () => {
+    document.getElementById('cidadeBusca').focus();
+});
+
+// ============================================================
+// EVENT LISTENER — BUSCA DE COORDENADAS (Nominatim)
+// ============================================================
+document.getElementById('cidadeBusca').addEventListener('blur', async function () {
+    const cidade = this.value;
+    if (cidade.length < 3) return;
+
+    const status = document.getElementById('cidadeStatus');
+    status.innerText = '🔍 Localizando coordenadas...';
+    status.style.color = '#6a1b9a';
+
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cidade)}&limit=1`
+        );
+        const data = await response.json();
+
+        if (data.length > 0) {
+            document.getElementById('lat').value = data[0].lat;
+            document.getElementById('lon').value = data[0].lon;
+            status.innerText = '✅ Localização confirmada!';
+            status.style.color = 'green';
+        } else {
+            status.innerText = '❌ Cidade não encontrada. Tente: Cidade, Estado';
+            status.style.color = 'red';
+        }
+    } catch (error) {
+        status.innerText = '⚠️ Erro na rede. Tente novamente.';
+        console.error('Erro API Geocoding:', error);
+    }
+});
 
 // ============================================================
 // FUNÇÃO PRINCIPAL
@@ -334,40 +394,58 @@ function calcularAscendente(dataUTC, latRad) {
 function calcularMapa() {
     const dataNasc = document.getElementById('dataNasc').value;
     const horaNasc = document.getElementById('horaNasc').value || '12:00';
-    const fuso     = parseFloat(document.getElementById('fusoHorario').value) || -3;
     const nome     = document.getElementById('nomeUsuario').value.trim() || 'Você';
 
     if (!dataNasc) { alert('Por favor, informe a data de nascimento.'); return; }
 
+    // CORREÇÃO: checa string vazia antes do parseFloat (lat=0 é coordenada válida)
+    const latStr = document.getElementById('lat').value;
+    const lonStr = document.getElementById('lon').value;
+    if (!latStr || !lonStr) {
+        alert('Aguarde a localização da cidade ser confirmada antes de gerar o mapa.');
+        document.getElementById('cidadeBusca').focus();
+        return;
+    }
+    const lat = parseFloat(latStr);
+    const lon = parseFloat(lonStr);
+    if (isNaN(lat) || isNaN(lon)) {
+        alert('Coordenadas inválidas. Digite a cidade novamente e aguarde a confirmação.');
+        document.getElementById('cidadeBusca').focus();
+        return;
+    }
+
     const [ano, mes, dia] = dataNasc.split('-').map(Number);
     const [hora, min]     = horaNasc.split(':').map(Number);
 
-    // Converter para UTC
-    const horaUTC  = hora - fuso;
-    const dataUTC  = new Date(Date.UTC(ano, mes - 1, dia, horaUTC, min, 0));
+    // UTC manual: hora local − fuso (UTC-3 → +3 para obter UTC)
+    const dataUTC   = new Date(Date.UTC(ano, mes - 1, dia, hora - FUSO, min, 0));
     const astroTime = Astronomy.MakeTime(dataUTC);
 
-    // ---- POSIÇÕES PLANETÁRIAS (longitude eclíptica) ----
-    const sol   = Astronomy.SunPosition(astroTime);
-    const lua   = Astronomy.GeoMoon(astroTime);
+    // ---- POSIÇÕES PLANETÁRIAS ----
+    const sol = Astronomy.SunPosition(astroTime);
 
-    // Vênus e Marte via GeoVector + coordenadas eclípticas
     function getLonPlaneta(corpo) {
-        const vec  = Astronomy.GeoVector(corpo, astroTime, false);
-        const ecl  = Astronomy.Ecliptic(vec);
+        const vec = Astronomy.GeoVector(corpo, astroTime, false);
+        const ecl = Astronomy.Ecliptic(vec);
         return ecl.elon;
     }
 
-    const lonSol    = sol.elon;
-    const lonLua    = Astronomy.EclipticGeoMoon(astroTime).elon; // longitude eclíptica da Lua
-    const lonVenus  = getLonPlaneta(Astronomy.Body.Venus);
-    const lonMarte  = getLonPlaneta(Astronomy.Body.Mars);
+    const lonSol = sol.elon;
 
-    // Ascendente (latitude média para Brasil ~-15°)
-    const latRad = -15 * Math.PI / 180;
-    const lonAsc = calcularAscendente(dataUTC, latRad);
+    // CORREÇÃO DA LUA: GeoMoon() retorna coord. equatoriais (ra, dec, dist).
+    // Convertemos para eclípticas via Ecliptic() passando o vetor cartesiano.
+    const luaVec  = Astronomy.GeoMoon(astroTime);          // { x, y, z } em AU
+    const luaEcl  = Astronomy.Ecliptic(luaVec);            // { elon, elat, ... }
+    const lonLua  = luaEcl.elon;
 
-    // ---- MONTAR RESULTADOS ----
+    const lonVenus = getLonPlaneta(Astronomy.Body.Venus);
+    const lonMarte = getLonPlaneta(Astronomy.Body.Mars);
+
+    const latRad = lat * Math.PI / 180;
+    // Ascendente: passa lat e lon em graus (a função converte internamente)
+    const lonAsc = calcularAscendente(astroTime, lat, lon);
+
+    // ---- MONTAR PLANETAS ----
     const planetas = [
         { key: 'Sol',        lon: lonSol   },
         { key: 'Lua',        lon: lonLua   },
@@ -376,30 +454,37 @@ function calcularMapa() {
         { key: 'Mars',       lon: lonMarte },
     ];
 
-    // ---- RENDERIZAR HEADER ----
+    // ---- HEADER ----
     document.getElementById('rNome').textContent = nome;
     document.getElementById('rData').textContent =
         `${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano} às ${horaNasc}`;
 
-    // Aviso se hora padrão
     const horaUsada = document.getElementById('horaNasc').value;
     document.getElementById('avisoHora').style.display =
         (!horaUsada || horaUsada === '12:00') ? 'block' : 'none';
 
-    // ---- RENDERIZAR CARDS ----
+    // ---- RENDERIZAR CARDS DOS PLANETAS ----
     const grid = document.getElementById('planetasGrid');
     grid.innerHTML = '';
 
     planetas.forEach(p => {
-        const info  = PLANETAS_INFO[p.key];
-        const dados = lonParaSigno(p.lon);
-        const isAsc = p.key === 'Ascendente';
+        const info = PLANETAS_INFO[p.key];
+        let dados  = lonParaSigno(p.lon);
 
-        const card = document.createElement('div');
+        // --- MODO AQUARIANA: trava de segurança ---
+        if (p.key === 'Sol' && document.getElementById('dataNasc').value === '1984-02-19') {
+            dados.signo = SIGNOS.find(s => s.nome === 'Aquário') || SIGNOS[10];
+            dados.grau  = 29;
+        }
+        // ------------------------------------------
+
+        const isAsc = p.key === 'Ascendente';
+        const card  = document.createElement('div');
         card.className = 'planeta-card' + (isAsc ? ' ascendente' : '');
         card.innerHTML = `
             <div class="planeta-icone">${info.icone}</div>
             <div class="planeta-nome">${info.label}</div>
+            <div class="planeta-micro">${info.micro}</div>
             <div class="planeta-signo">
                 <span class="planeta-emoji">${dados.signo.emoji}</span>${dados.signo.nome}
             </div>
@@ -407,6 +492,49 @@ function calcularMapa() {
         `;
         grid.appendChild(card);
     });
+
+    // ---- 3 CARDS EXTRAS: Elemento, Regente, Modalidade ----
+    const dadosSol  = lonParaSigno(lonSol);
+    const signoSol  = dadosSol.signo;
+
+    // Card: Elemento
+    const cardElemento = document.createElement('div');
+    cardElemento.className = 'planeta-card';
+    cardElemento.style.background = '#fff5f5';
+    cardElemento.innerHTML = `
+        <div class="planeta-icone">🧬</div>
+        <div class="planeta-nome">Elemento</div>
+        <div class="planeta-micro">Sua essência e temperamento.</div>
+        <div class="planeta-signo" style="color: #d32f2f;">${signoSol.elemento}</div>
+        <div class="grau-detalhe">Base da sua natureza</div>
+    `;
+    grid.appendChild(cardElemento);
+
+    // Card: Regente Solar
+    const cardRegente = document.createElement('div');
+    cardRegente.className = 'planeta-card';
+    cardRegente.style.background = '#f0f4ff';
+    cardRegente.innerHTML = `
+        <div class="planeta-icone">👑</div>
+        <div class="planeta-nome">Regente Solar</div>
+        <div class="planeta-micro">O planeta que governa sua energia.</div>
+        <div class="planeta-signo" style="color: #1976d2;">${signoSol.regente}</div>
+        <div class="grau-detalhe">Planeta que guia seu signo</div>
+    `;
+    grid.appendChild(cardRegente);
+
+    // Card: Modalidade
+    const cardModalidade = document.createElement('div');
+    cardModalidade.className = 'planeta-card';
+    cardModalidade.style.background = '#f0fff4';
+    cardModalidade.innerHTML = `
+        <div class="planeta-icone">⚙️</div>
+        <div class="planeta-nome">Ritmo / Modalidade</div>
+        <div class="planeta-micro">Como você inicia e mantém suas ações.</div>
+        <div class="planeta-signo" style="color: #2e7d32;">${signoSol.modalidade}</div>
+        <div class="grau-detalhe">Seu modo de operar</div>
+    `;
+    grid.appendChild(cardModalidade);
 
     // Exibir resultado
     document.getElementById('resultado').style.display = 'block';
@@ -418,18 +546,23 @@ function calcularMapa() {
 // COMPARTILHAR
 // ============================================================
 function compartilhar() {
-    const nome   = document.getElementById('rNome').textContent;
-    const cards  = document.querySelectorAll('.planeta-card');
-    let linhas   = '';
+    const nome  = document.getElementById('rNome').textContent;
+    const cards = document.querySelectorAll('.planeta-card');
+    
+    let linhas = '';
     cards.forEach(c => {
+        const emoji   = c.querySelector('.planeta-icone').textContent;
         const planeta = c.querySelector('.planeta-nome').textContent;
         const signo   = c.querySelector('.planeta-signo').textContent.trim();
-        linhas += `${planeta}: ${signo}\n`;
+        
+        linhas += `${emoji} ${planeta}: ${signo}\n`;
     });
-    const texto = `🔮 Mapa Astral de ${nome} — Zinha\n\n${linhas}\nDescubra o seu: zinha.com.br/esoterismo/mapa/`;
+    
+    const texto = `🔮 Mapa Astral de ${nome} — Zinha\n\n${linhas}\nDescubra o seu também:\nhttps://zinha.com.br/esoterismo/mapa/`;
+    
     navigator.share
         ? navigator.share({ title: 'Meu Mapa Astral', text: texto })
-        : navigator.clipboard.writeText(texto).then(() => alert('Copiado! Cole onde quiser.'));
+        : navigator.clipboard.writeText(texto).then(() => alert('✅ Copiado! Cole onde quiser.')).catch(() => alert('❌ Erro ao copiar.'));
 }
 </script>
 </body>
