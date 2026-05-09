@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Efeito Stroop — Passatempo Zinha</title>
+    <style>
+        :root {
+            --azul-csn: #005596;
+            --azul-claro: #1976d2;
+            --fundo: #f5f9ff;
+            --texto: #10254f;
+            --branco: #ffffff;
+            --cinza: #c3d4eb;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #eef4ff 0%, #f8fbff 100%);
+            color: var(--texto);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        main {
+            width: min(100%, 980px);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            color: var(--azul-csn);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .hero {
+            display: grid;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 2.6rem);
+            color: var(--azul-csn);
+        }
+        .hero p {
+            margin: 0;
+            line-height: 1.7;
+            color: #364f7e;
+            max-width: 760px;
+        }
+        .panel {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .panel-card {
+            background: var(--azul-csn);
+            border-radius: 16px;
+            padding: 18px 16px;
+            color: var(--branco);
+            box-shadow: 0 18px 36px rgba(0, 83, 150, 0.14);
+        }
+        .panel-card span { display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 8px; }
+        .panel-card strong { display: block; font-size: 1.8rem; line-height: 1; }
+        .game-box {
+            display: grid;
+            gap: 18px;
+            background: var(--branco);
+            border: 1px solid rgba(0, 85, 150, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 18px 40px rgba(0, 84, 150, 0.08);
+        }
+        .challenge {
+            display: grid;
+            gap: 16px;
+        }
+        .target {
+            display: grid;
+            gap: 10px;
+        }
+        .instruction {
+            background: var(--azul-csn);
+            color: var(--branco);
+            border-radius: 16px;
+            padding: 18px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .visual {
+            background: var(--fundo);
+            border: 2px solid rgba(0, 85, 150, 0.12);
+            border-radius: 18px;
+            padding: 28px 18px;
+            text-align: center;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+        .timer-bar {
+            height: 12px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--azul-claro), var(--azul-csn));
+            transform-origin: left;
+            width: 100%;
+            max-width: 100%;
+        }
+        .grid-options {
+            display: grid;
+            gap: 12px;
+        }
+        .grid-options.grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-options.grid-9 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .option-button {
+            border: 2px solid rgba(0, 85, 150, 0.16);
+            background: var(--fundo);
+            color: var(--texto);
+            border-radius: 16px;
+            padding: 18px 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 68px;
+            display: grid;
+            place-items: center;
+        }
+        .option-button:hover { transform: translateY(-2px); border-color: var(--azul-csn); }
+        .option-button.correct { border-color: #2e7d32; }
+        .option-button.wrong { border-color: #d32f2f; }
+        .controls { display: flex; flex-wrap: wrap; gap: 12px; }
+        .controls .secondary {
+            border: 2px solid rgba(0, 85, 150, 0.18);
+            background: var(--branco);
+            color: var(--azul-csn);
+        }
+        .hint { color: #516b8c; font-size: 0.95rem; margin-top: 0; }
+        @media (max-width: 720px) {
+            .panel { grid-template-columns: 1fr; }
+            .grid-options.grid-9 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 520px) {
+            .grid-options.grid-9 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <a class="back-link" href="/passatempo/jogos/">← Voltar aos Jogos</a>
+        <section class="hero">
+            <h1>Efeito Stroop</h1>
+            <p>Desafie sua mente com conflitos visuais leves. Clique na cor correta mesmo quando o texto diz outra coisa.</p>
+        </section>
+
+        <div class="panel">
+            <div class="panel-card">
+                <span>Acertos seguidos</span>
+                <strong id="streakValue">0</strong>
+            </div>
+            <div class="panel-card">
+                <span>Recorde</span>
+                <strong id="bestValue">0</strong>
+            </div>
+            <div class="panel-card">
+                <span>Tempo restante</span>
+                <strong id="timeValue">6s</strong>
+            </div>
+        </div>
+
+        <div class="game-box">
+            <div class="challenge">
+                <div class="instruction" id="instruction">Clique na cor ...</div>
+                <div class="visual" id="visualText">--</div>
+                <div class="timer-bar" id="timerBar"></div>
+            </div>
+            <div class="grid-options grid-4" id="optionsGrid"></div>
+            <p class="hint">Quanto mais rápido você acerta, mais opções aparecem e menos tempo sobra.</p>
+            <div class="controls">
+                <button class="btn" id="newGameBtn">Novo Jogo</button>
+                <button class="btn secondary" id="resetBtn">Limpar Recorde</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const cores = [
+            { nome: 'Azul', hex: '#005596' },
+            { nome: 'Vermelho', hex: '#d32f2f' },
+            { nome: 'Verde', hex: '#008000' },
+            { nome: 'Amarelo', hex: '#f9a825' },
+            { nome: 'Roxo', hex: '#6a1b9a' },
+            { nome: 'Laranja', hex: '#ef6c00' },
+            { nome: 'Cinza', hex: '#455a64' },
+            { nome: 'Preto', hex: '#212121' },
+            { nome: 'Branco', hex: '#fafafa' }
+        ];
+
+        const STORAGE_KEY = 'zinha_stroop_best';
+        const instructionEl = document.getElementById('instruction');
+        const visualEl = document.getElementById('visualText');
+        const optionsGrid = document.getElementById('optionsGrid');
+        const streakValue = document.getElementById('streakValue');
+        const bestValue = document.getElementById('bestValue');
+        const timeValue = document.getElementById('timeValue');
+        const timerBar = document.getElementById('timerBar');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let targetColor = null;
+        let activeChallenge = null;
+        let streak = 0;
+        let bestStreak = 0;
+        let timeLeft = 6;
+        let timerId = null;
+
+        function loadBestScore() {
+            bestStreak = parseInt(localStorage.getItem(STORAGE_KEY), 10) || 0;
+            bestValue.textContent = bestStreak;
+        }
+
+        function saveBestScore() {
+            if (streak > bestStreak) {
+                bestStreak = streak;
+                localStorage.setItem(STORAGE_KEY, bestStreak);
+                bestValue.textContent = bestStreak;
+            }
+        }
+
+        function gerarDesafio() {
+            // Gerador de desafio: sorteia a cor alvo e um rótulo incorreto para criar a confusão.
+            targetColor = cores[Math.floor(Math.random() * cores.length)];
+            let rotulo = cores[Math.floor(Math.random() * cores.length)];
+            while (rotulo.nome === targetColor.nome) {
+                rotulo = cores[Math.floor(Math.random() * cores.length)];
+            }
+
+            return {
+                instrucao: `Clique no objeto ${targetColor.nome}`,
+                elementoVisual: {
+                    texto: rotulo.nome,
+                    corHex: targetColor.hex
+                }
+            };
+        }
+
+        function getOptions(count) {
+            const sorted = [...cores].sort(() => Math.random() - 0.5);
+            const selected = sorted.slice(0, count);
+            if (!selected.some(item => item.nome === targetColor.nome)) {
+                selected[selected.length - 1] = targetColor;
+            }
+            return selected.sort((a, b) => a.nome.localeCompare(b.nome));
+        }
+
+        function getTimeLimit() {
+            // Motor de dificuldade: tempo diminui conforme o jogador acerta mais.
+            if (streak >= 10) return 3;
+            if (streak >= 6) return 4;
+            if (streak >= 3) return 5;
+            return 6;
+        }
+
+        function getGridSize() {
+            // Grid aumenta a partir de 4 opções para 9, conforme o streak cresce.
+            return streak >= 5 ? 9 : 4;
+        }
+
+        function renderChallenge() {
+            activeChallenge = gerarDesafio();
+            instructionEl.textContent = activeChallenge.instrucao;
+            visualEl.textContent = activeChallenge.elementoVisual.texto;
+            visualEl.style.color = activeChallenge.elementoVisual.corHex;
+            visualEl.style.background = activeChallenge.elementoVisual.corHex === '#fafafa' ? '#e0e0e0' : '#f8fbff';
+
+            const optionCount = getGridSize();
+            const options = getOptions(optionCount);
+            optionsGrid.className = `grid-options grid-${optionCount}`;
+            optionsGrid.innerHTML = '';
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'option-button';
+                button.textContent = option.nome;
+                button.dataset.value = option.nome;
+                button.addEventListener('click', handleAnswer);
+                optionsGrid.appendChild(button);
+            });
+
+            timeLeft = getTimeLimit();
+            timeValue.textContent = `${timeLeft}s`;
+            timerBar.style.transform = 'scaleX(1)';
+            startTimer();
+        }
+
+        function endRound(success) {
+            clearInterval(timerId);
+            timerId = null;
+            saveBestScore();
+            streakValue.textContent = streak;
+            if (!success) {
+                streak = 0;
+                streakValue.textContent = streak;
+            }
+        }
+
+        function handleAnswer(event) {
+            const clicked = event.currentTarget.dataset.value;
+            const success = clicked === targetColor.nome;
+            event.currentTarget.classList.add(success ? 'correct' : 'wrong');
+            if (success) {
+                streak += 1;
+                saveBestScore();
+                renderChallenge();
+            } else {
+                endRound(false);
+                setTimeout(() => renderChallenge(), 600);
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerId);
+            const duration = getTimeLimit();
+            const startTimestamp = Date.now();
+            timerId = setInterval(() => {
+                const elapsed = (Date.now() - startTimestamp) / 1000;
+                const remaining = duration - elapsed;
+                timeLeft = Math.max(0, Math.ceil(remaining));
+                timeValue.textContent = `${timeLeft}s`;
+                timerBar.style.transform = `scaleX(${Math.max(0, remaining / duration)})`;
+                if (remaining <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    endRound(false);
+                    setTimeout(() => renderChallenge(), 600);
+                }
+            }, 50);
+        }
+
+        function resetGame() {
+            streak = 0;
+            streakValue.textContent = streak;
+            loadBestScore();
+            renderChallenge();
+        }
+
+        function resetBest() {
+            localStorage.removeItem(STORAGE_KEY);
+            bestStreak = 0;
+            bestValue.textContent = bestStreak;
+        }
+
+        newGameBtn.addEventListener('click', resetGame);
+        resetBtn.addEventListener('click', () => {
+            resetBest();
+            resetGame();
+        });
+
+        loadBestScore();
+        renderChallenge();
+    </script>
+</body>
+</html>
