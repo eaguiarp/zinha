@@ -355,7 +355,7 @@
 <header>
     <h1>🦁 Carnê-Leão / IR Autônomo</h1>
     <p>Calcule o Imposto de Renda mensal para profissionais liberais.</p>
-    <div class="badge-receita">📋 Tabela Progressiva — Receita Federal 2025</div>
+    <div class="badge-receita">📋 Tabela Progressiva — Receita Federal 2026</div>
 </header>
 
 <div class="container">
@@ -476,73 +476,65 @@
 
 <script>
     // ─────────────────────────────────────────────────────────────────────
-    // MÓDULO: Calculadora de IR — Carnê-Leão / Profissional Liberal
-    //
-    // ESTRUTURA DE DADOS DA TABELA PROGRESSIVA
     // ─────────────────────────────────────────────────────────────────────
-    //
-    // A tabela é um ARRAY DE OBJETOS, cada um representando uma faixa.
-    // Isso separa completamente DADOS da LÓGICA de cálculo.
-    //
-    // Quando a Receita Federal atualizar os valores (ex: 2026),
-    // você só altera os números aqui. A função calcularIR() não muda.
-    //
-    // Campos de cada faixa:
-    //   ate          → limite superior da faixa (Infinity = última faixa)
-    //   aliquota     → taxa decimal (0.075 = 7,5%)
-    //   deducao      → parcela a deduzir em R$ (método de simplificação fiscal)
-    //   rotulo       → label legível para exibição na UI
-    //   cssClass     → classe CSS para colorir a barra visual
-    //
-    // COMO FUNCIONA A PARCELA A DEDUZIR?
-    //   Em vez de calcular faixa por faixa (cálculo progressivo puro),
-    //   a Receita criou um atalho: aplica-se a alíquota mais alta ao total
-    //   e subtrai a "parcela a deduzir" — o resultado é idêntico.
-    //   Ex: R$ 3.000 → 3.000 × 15% - 360,00 = R$ 90,00
-    //   (verificação: 0 + 567,45×7,5% + 173,35×15% = 42,56+26,00 = R$ 68,56 — ops)
-    //   Nota: a tabela oficial BR usa de fato o método da parcela a deduzir.
-    //
-    // Fonte: Receita Federal — tabela vigente em 2025
+// MÓDULO: Calculadora de IR — Carnê-Leão / Profissional Liberal
+// ─────────────────────────────────────────────────────────────────────
+//
+// ESTRUTURA DE DADOS DA TABELA PROGRESSIVA (VIGÊNCIA 2026)
+// ─────────────────────────────────────────────────────────────────────
+//
+// A tabela é um ARRAY DE OBJETOS. Isso separa DADOS da LÓGICA.
+// Com a isenção de até R$ 5.000, as faixas de 7,5% e 15% foram 
+// reestruturadas para simplificar o cálculo para a classe média.
+//
+// Campos:
+//   ate      → limite superior da faixa (Infinity = última faixa)
+//   aliquota → taxa decimal (0.225 = 22,5%)
+//   deducao  → parcela a deduzir em R$
+//   rotulo   → label para a interface (UI)
+//   cssClass → classe CSS para estilização visual
+//
+// COMO FUNCIONA A PARCELA A DEDUZIR EM 2026?
+//   O método permanece o mesmo: aplica-se a alíquota ao total e 
+//   subtrai-se a dedução. 
+//
+//   Exemplo Prático (R$ 6.000,00):
+//   1. Faixa: Até R$ 6.500,00 (15%)
+//   2. Cálculo: (6.000 × 0,15) - 750,00
+//   3. Resultado: 900,00 - 750,00 = R$ 150,00
+//
+// Fonte: Regulamentação vigente para o ano-calendário 2026.
     // ─────────────────────────────────────────────────────────────────────
-
-    const TABELA_IR_2025 = [
-        {
-            ate: 2259.20,
-            aliquota: 0,
-            deducao: 0,
-            rotulo: 'Isento',
-            cssClass: 'faixa-isento'
-        },
-        {
-            ate: 2826.65,
-            aliquota: 0.075,
-            deducao: 169.44,
-            rotulo: '7,5%',
-            cssClass: 'faixa-7'
-        },
-        {
-            ate: 3751.05,
-            aliquota: 0.15,
-            deducao: 381.44,
-            rotulo: '15%',
-            cssClass: 'faixa-15'
-        },
-        {
-            ate: 4664.68,
-            aliquota: 0.225,
-            deducao: 662.77,
-            rotulo: '22,5%',
-            cssClass: 'faixa-225'
-        },
-        {
-            ate: Infinity,
-            aliquota: 0.275,
-            deducao: 896.00,
-            rotulo: '27,5%',
-            cssClass: 'faixa-275'
-        }
-    ];
-
+const TABELA_IR_2026 = [
+    {
+        ate: 5000.00,
+        aliquota: 0,
+        deducao: 0,
+        rotulo: 'Isento',
+        cssClass: 'faixa-isento'
+    },
+    {
+        ate: 6500.00,
+        aliquota: 0.15,
+        deducao: 750.00,
+        rotulo: '15%',
+        cssClass: 'faixa-15'
+    },
+    {
+        ate: 8000.00,
+        aliquota: 0.225,
+        deducao: 1237.50,
+        rotulo: '22,5%',
+        cssClass: 'faixa-225'
+    },
+    {
+        ate: Infinity,
+        aliquota: 0.275,
+        deducao: 1637.50,
+        rotulo: '27,5%',
+        cssClass: 'faixa-275'
+    }
+];
     // ─────────────────────────────────────────────────────────────────────
     // FUNÇÃO PRINCIPAL DE CÁLCULO — pura, sem efeitos colaterais
     //
