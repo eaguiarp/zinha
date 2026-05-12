@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IR Carnê-Leão | Zinha</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 30px 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-group { margin: 20px 0; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #1a73e8; }
+        button { background: #1a73e8; color: white; border: none; padding: 14px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        button:hover { background: #1557b0; }
+        .resultado { margin-top: 25px; padding: 20px; background: #e8f0fe; border-radius: 10px; text-align: left; }
+        .resultado h3 { color: #1a73e8; margin-top: 0; }
+        .valor-destaque { font-size: 22px; font-weight: bold; color: #d32f2f; margin: 15px 0 5px; }
+        a.back { display: inline-block; color: #1a73e8; text-decoration: none; margin-bottom: 20px; font-weight: bold; }
+        a.back:hover { text-decoration: underline; }
+        .info-box { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/financas/" class="back">← Voltar</a>
+
+        <div class="card">
+            <h2>📊 Calculadora de IR - Carnê-Leão</h2>
+            <p style="color: #666;">Calcule o imposto de renda mensal para profissionais liberais.</p>
+
+            <div class="input-group">
+                <label for="rendimento">Rendimento Tributável Mensal (R$)</label>
+                <input type="number" id="rendimento" placeholder="Ex: 5000,00" step="0.01" min="0">
+            </div>
+
+            <button onclick="executarCalculoIR()">Calcular IR</button>
+
+            <div id="resultadoIR" class="resultado" style="display: none;">
+                <h3>Resultado do Cálculo</h3>
+                <div class="info-box">
+                    <p style="margin: 5px 0;"><strong>Rendimento:</strong> R$ <span id="rendimentoMostrado"></span></p>
+                    <p style="margin: 5px 0;"><strong>Alíquota Nominal:</strong> <span id="aliquotaNominal"></span>%</p>
+                    <p style="margin: 5px 0;"><strong>Parcela a Deduzir:</strong> R$ <span id="deducaoMostrada"></span></p>
+                    <p class="valor-destaque">Imposto Devido: R$ <span id="impostoMostrado"></span></p>
+                    <p style="margin: 5px 0; color: #666;"><strong>Alíquota Efetiva:</strong> <span id="aliquotaEfetiva"></span>%</p>
+                    <p style="font-size: 12px; color: #999; margin-top: 10px;">Faixa: <span id="faixaMostrada"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TABELA_IR = [
+            { limite: 5000.00, aliquota: 0, deducao: 0 },
+            { limite: 6500.00, aliquota: 0.15, deducao: 750.00 },
+            { limite: 8000.00, aliquota: 0.225, deducao: 1237.50 },
+            { limite: Infinity, aliquota: 0.275, deducao: 1637.50 }
+        ];
+
+        const formatarMoeda = (valor) => {
+            return Math.round((valor + Number.EPSILON) * 100) / 100;
+        };
+
+        function calcularIR(rendimentoTributavel) {
+            if (rendimentoTributavel < 0) {
+                throw new Error('O rendimento tributável não pode ser negativo');
+            }
+
+            let faixaAplicada = null;
+
+            for (let i = 0; i < TABELA_IR.length; i++) {
+                const faixa = TABELA_IR[i];
+                if (rendimentoTributavel <= faixa.limite) {
+                    faixaAplicada = faixa;
+                    break;
+                }
+            }
+
+            if (!faixaAplicada) {
+                faixaAplicada = TABELA_IR[TABELA_IR.length - 1];
+            }
+
+            let impostoDevido;
+
+            if (faixaAplicada.aliquota === 0) {
+                impostoDevido = 0;
+            } else {
+                impostoDevido = (rendimentoTributavel * faixaAplicada.aliquota) - faixaAplicada.deducao;
+                impostoDevido = Math.max(0, impostoDevido);
+            }
+
+            const aliquotaEfetiva = rendimentoTributavel > 0
+                ? (impostoDevido / rendimentoTributavel) * 100
+                : 0;
+
+            return {
+                rendimentoTributavel: formatarMoeda(rendimentoTributavel),
+                impostoDevido: formatarMoeda(impostoDevido),
+                aliquotaNominal: faixaAplicada.aliquota,
+                aliquotaEfetiva: formatarMoeda(aliquotaEfetiva),
+                deducao: formatarMoeda(faixaAplicada.deducao),
+                faixa: faixaAplicada.limite === null
+                    ? `Acima de R$ ${TABELA_IR[TABELA_IR.length - 2].limite.toFixed(2)}`
+                    : `Até R$ ${faixaAplicada.limite.toFixed(2)}`
+            };
+        }
+
+        function executarCalculoIR() {
+            const rendimento = parseFloat(document.getElementById('rendimento').value);
+
+            if (isNaN(rendimento)) {
+                alert('Informe um valor de rendimento válido');
+                return;
+            }
+
+            try {
+                const resultado = calcularIR(rendimento);
+
+                document.getElementById('rendimentoMostrado').textContent = resultado.rendimentoTributavel;
+                document.getElementById('aliquotaNominal').textContent = resultado.aliquotaNominal;
+                document.getElementById('deducaoMostrada').textContent = resultado.deducao;
+                document.getElementById('impostoMostrado').textContent = resultado.impostoDevido;
+                document.getElementById('aliquotaEfetiva').textContent = resultado.aliquotaEfetiva;
+                document.getElementById('faixaMostrada').textContent = resultado.faixa;
+                document.getElementById('resultadoIR').style.display = 'block';
+            } catch (erro) {
+                alert(erro.message);
+            }
+        }
+    </script>
+</body>
+</html>

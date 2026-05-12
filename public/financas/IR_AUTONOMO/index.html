@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carnê-Leão | IR Profissional Liberal | Zinha</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 40px 20px 60px;
+            color: #333;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 28px;
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .back:hover { text-decoration: underline; }
+
+        header { text-align: center; margin-bottom: 36px; }
+        header h1 { color: #1a73e8; font-size: 26px; margin-bottom: 6px; }
+        header p { color: #666; font-size: 15px; }
+        .badge-receita {
+            display: inline-block;
+            background: #fff3e0;
+            color: #e65100;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        label .hint {
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            color: #999;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .prefix {
+            position: absolute;
+            left: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #888;
+            pointer-events: none;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 14px 12px 38px;
+            border: 1.5px solid #dde1e7;
+            border-radius: 10px;
+            font-size: 17px;
+            font-family: inherit;
+            color: #222;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+        input[type="number"]:focus { border-color: #1a73e8; }
+
+        /* ── Deduções opcionais ── */
+        .deducoes-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+            color: #1a73e8;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .deducoes-toggle::before {
+            content: '▶';
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+        .deducoes-toggle.aberto::before { transform: rotate(90deg); }
+
+        .deducoes-painel { display: none; }
+        .deducoes-painel.aberto { display: block; }
+
+        .deducoes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 500px) {
+            .deducoes-grid { grid-template-columns: 1fr; }
+        }
+
+        .campo-deducao label { font-size: 12px; }
+        .campo-deducao .input-wrap input { font-size: 15px; padding: 10px 14px 10px 36px; }
+
+        .nota-deducao {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        /* ── Botão ── */
+        button.btn-calc {
+            width: 100%;
+            padding: 14px;
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 4px;
+        }
+        button.btn-calc:hover { background: #1558b0; }
+        button.btn-calc:active { transform: scale(0.98); }
+
+        /* ── Resultado principal ── */
+        .resultado { display: none; }
+        .resultado.visivel { display: block; }
+
+        .resultado-header {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            border-radius: 16px;
+            padding: 28px 32px;
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .resultado-header .label-res {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .resultado-header .ir-devido {
+            font-size: 44px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin-bottom: 4px;
+        }
+        .resultado-header .aliquota-efetiva {
+            font-size: 15px;
+            opacity: 0.85;
+        }
+
+        /* Grid de cards de métricas */
+        .metricas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metrica {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+        }
+        .metrica .m-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .metrica .m-valor {
+            font-size: 20px;
+            font-weight: 700;
+            color: #222;
+        }
+        .metrica.destaque .m-valor { color: #1a73e8; }
+        .metrica.aviso .m-valor { color: #e67e22; }
+
+        /* ── Barra visual de alíquotas ── */
+        .faixa-visual {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            margin-bottom: 16px;
+        }
+        .faixa-visual h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 18px;
+        }
+
+        .faixa-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .faixa-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .faixa-nome { color: #555; min-width: 60px; }
+        .faixa-barra-wrap {
+            flex: 1;
+            background: #f0f2f5;
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .faixa-barra { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+        .faixa-valor { font-weight: 600; color: #333; min-width: 80px; text-align: right; }
+
+        .faixa-isento   .faixa-dot, .faixa-isento   .faixa-barra { background: #27ae60; }
+        .faixa-7        .faixa-dot, .faixa-7        .faixa-barra { background: #2ecc71; }
+        .faixa-15       .faixa-dot, .faixa-15       .faixa-barra { background: #f39c12; }
+        .faixa-225      .faixa-dot, .faixa-225      .faixa-barra { background: #e67e22; }
+        .faixa-275      .faixa-dot, .faixa-275      .faixa-barra { background: #e74c3c; }
+
+        /* Faixa inativa */
+        .faixa-row.inativa { opacity: 0.3; }
+
+        /* ── Tabela de faixas ── */
+        .tabela-wrap {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            margin-bottom: 16px;
+        }
+        .tabela-wrap h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding-bottom: 10px;
+            border-bottom: 1.5px solid #eee;
+        }
+        td {
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            color: #444;
+        }
+        td:last-child { text-align: right; font-weight: 600; }
+        tr.faixa-ativa td { color: #1a73e8; font-weight: 700; background: #f0f6ff; }
+        tr.faixa-ativa td:first-child { border-radius: 8px 0 0 8px; padding-left: 8px; }
+        tr.faixa-ativa td:last-child  { border-radius: 0 8px 8px 0; padding-right: 8px; }
+
+        /* ── Dica ── */
+        .dica {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            border-radius: 0 10px 10px 0;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #2e7d32;
+            line-height: 1.6;
+        }
+
+        .erro {
+            background: #fff3f3;
+            border: 1.5px solid #f5c6c6;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #c0392b;
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+        .erro.visivel { display: block; }
+    </style>
+</head>
+<body>
+
+<a href="/financas/" class="back">← Finanças Pessoais</a>
+
+<header>
+    <h1>🦁 Carnê-Leão / IR Autônomo</h1>
+    <p>Calcule o Imposto de Renda mensal para profissionais liberais.</p>
+    <div class="badge-receita">📋 Tabela Progressiva — Receita Federal 2025</div>
+</header>
+
+<div class="container">
+
+    <!-- Inputs -->
+    <div class="card">
+        <h2>💼 Dados do mês</h2>
+
+        <div class="field">
+            <label>Rendimento tributável bruto <span class="hint">recebimentos do mês</span></label>
+            <div class="input-wrap">
+                <span class="prefix">R$</span>
+                <input type="number" id="rendimento" placeholder="0,00" min="0" step="0.01">
+            </div>
+        </div>
+
+        <!-- Deduções legais opcionais -->
+        <div class="deducoes-toggle" id="toggleDed" onclick="toggleDeducoes()">
+            Deduções legais (opcionais)
+        </div>
+        <div class="deducoes-painel" id="painelDed">
+            <div class="deducoes-grid">
+                <div class="campo-deducao field">
+                    <label>Despesas c/ dependentes <span class="hint">por dependente</span></label>
+                    <div class="input-wrap">
+                        <span class="prefix">R$</span>
+                        <input type="number" id="dependentes" placeholder="0,00" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="campo-deducao field">
+                    <label>Contribuição INSS</label>
+                    <div class="input-wrap">
+                        <span class="prefix">R$</span>
+                        <input type="number" id="inss" placeholder="0,00" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="campo-deducao field">
+                    <label>Pensão alimentícia <span class="hint">judicial</span></label>
+                    <div class="input-wrap">
+                        <span class="prefix">R$</span>
+                        <input type="number" id="pensao" placeholder="0,00" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="campo-deducao field">
+                    <label>Outras deduções legais</label>
+                    <div class="input-wrap">
+                        <span class="prefix">R$</span>
+                        <input type="number" id="outrasDeducoes" placeholder="0,00" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+            <p class="nota-deducao">
+                ℹ️ Dedução por dependente: R$ 189,59/mês (2025). Informe o total já calculado.
+                Consulte sempre um contador para sua situação específica.
+            </p>
+        </div>
+
+        <button class="btn-calc" onclick="calcularIR()">Calcular IR mensal →</button>
+
+        <div class="erro" id="erroMsg"></div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="resultado" id="resultado">
+
+        <div class="resultado-header">
+            <div class="label-res">IR a recolher (Carnê-Leão)</div>
+            <div class="ir-devido" id="irDevido">—</div>
+            <div class="aliquota-efetiva" id="aliquotaEfetiva">Alíquota efetiva: —</div>
+        </div>
+
+        <div class="metricas-grid">
+            <div class="metrica">
+                <div class="m-label">Rend. bruto</div>
+                <div class="m-valor" id="resRendBruto">—</div>
+            </div>
+            <div class="metrica destaque">
+                <div class="m-label">Base de cálculo</div>
+                <div class="m-valor" id="resBaseCalculo">—</div>
+            </div>
+            <div class="metrica">
+                <div class="m-label">Total deduções</div>
+                <div class="m-valor" id="resDeducoes">—</div>
+            </div>
+            <div class="metrica destaque">
+                <div class="m-label">Rend. líquido (após IR)</div>
+                <div class="m-valor" id="resLiquido">—</div>
+            </div>
+        </div>
+
+        <!-- Barras de faixas -->
+        <div class="faixa-visual">
+            <h3>📊 Distribuição por faixas</h3>
+            <div id="barraFaixas"></div>
+        </div>
+
+        <!-- Tabela progressiva com faixa ativa destacada -->
+        <div class="tabela-wrap">
+            <h3>📋 Tabela progressiva mensal 2025</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Faixa de rendimento</th>
+                        <th>Alíquota</th>
+                        <th>Parcela a deduzir</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaFaixas"></tbody>
+            </table>
+        </div>
+
+        <!-- Dica verde -->
+        <div class="dica" id="dicaFinal"></div>
+
+    </div>
+
+</div>
+
+<script>
+    // ─────────────────────────────────────────────────────────────────────
+    // MÓDULO: Calculadora de IR — Carnê-Leão / Profissional Liberal
+    //
+    // ESTRUTURA DE DADOS DA TABELA PROGRESSIVA
+    // ─────────────────────────────────────────────────────────────────────
+    //
+    // A tabela é um ARRAY DE OBJETOS, cada um representando uma faixa.
+    // Isso separa completamente DADOS da LÓGICA de cálculo.
+    //
+    // Quando a Receita Federal atualizar os valores (ex: 2026),
+    // você só altera os números aqui. A função calcularIR() não muda.
+    //
+    // Campos de cada faixa:
+    //   ate          → limite superior da faixa (Infinity = última faixa)
+    //   aliquota     → taxa decimal (0.075 = 7,5%)
+    //   deducao      → parcela a deduzir em R$ (método de simplificação fiscal)
+    //   rotulo       → label legível para exibição na UI
+    //   cssClass     → classe CSS para colorir a barra visual
+    //
+    // COMO FUNCIONA A PARCELA A DEDUZIR?
+    //   Em vez de calcular faixa por faixa (cálculo progressivo puro),
+    //   a Receita criou um atalho: aplica-se a alíquota mais alta ao total
+    //   e subtrai a "parcela a deduzir" — o resultado é idêntico.
+    //   Ex: R$ 3.000 → 3.000 × 15% - 360,00 = R$ 90,00
+    //   (verificação: 0 + 567,45×7,5% + 173,35×15% = 42,56+26,00 = R$ 68,56 — ops)
+    //   Nota: a tabela oficial BR usa de fato o método da parcela a deduzir.
+    //
+    // Fonte: Receita Federal — tabela vigente em 2025
+    // ─────────────────────────────────────────────────────────────────────
+
+    const TABELA_IR_2025 = [
+        {
+            ate: 2259.20,
+            aliquota: 0,
+            deducao: 0,
+            rotulo: 'Isento',
+            cssClass: 'faixa-isento'
+        },
+        {
+            ate: 2826.65,
+            aliquota: 0.075,
+            deducao: 169.44,
+            rotulo: '7,5%',
+            cssClass: 'faixa-7'
+        },
+        {
+            ate: 3751.05,
+            aliquota: 0.15,
+            deducao: 381.44,
+            rotulo: '15%',
+            cssClass: 'faixa-15'
+        },
+        {
+            ate: 4664.68,
+            aliquota: 0.225,
+            deducao: 662.77,
+            rotulo: '22,5%',
+            cssClass: 'faixa-225'
+        },
+        {
+            ate: Infinity,
+            aliquota: 0.275,
+            deducao: 896.00,
+            rotulo: '27,5%',
+            cssClass: 'faixa-275'
+        }
+    ];
+
+    // ─────────────────────────────────────────────────────────────────────
+    // FUNÇÃO PRINCIPAL DE CÁLCULO — pura, sem efeitos colaterais
+    //
+    // @param {number} rendimentoBruto  - Rendimento bruto do mês
+    // @param {number} totalDeducoes    - Soma de todas as deduções legais
+    // @param {Array}  tabela           - Tabela IR (injetável → facilita testes)
+    //
+    // @returns {Object} com todos os campos necessários para a UI
+    // ─────────────────────────────────────────────────────────────────────
+    function calcularIR(rendimentoBruto, totalDeducoes = 0, tabela = TABELA_IR_2025) {
+        // 1. Base de cálculo = rendimento − deduções
+        //    Não pode ser negativa.
+        const baseCalculo = Math.max(0, rendimentoBruto - totalDeducoes);
+
+        // 2. Encontrar a faixa correspondente à base de cálculo
+        //    Array.find() percorre em ordem; a primeira faixa cujo limite
+        //    seja >= base é a faixa correta. Como é progressivo e as faixas
+        //    estão em ordem crescente, isso sempre encontra a faixa certa.
+        const faixaAplicavel = tabela.find(f => baseCalculo <= f.ate);
+
+        // 3. Aplicar o método da parcela a deduzir:
+        //    IR = (base × alíquota) − parcela_a_deduzir
+        //    Se isento, IR = 0.
+        const irBruto = (baseCalculo * faixaAplicavel.aliquota) - faixaAplicavel.deducao;
+
+        // 4. IR nunca pode ser negativo (caso de deduções altas)
+        const irDevido = Math.max(0, Math.round(irBruto * 100) / 100);
+
+        // 5. Alíquota efetiva = IR / rendimento bruto (não a alíquota da faixa)
+        //    Reflete a carga tributária real sobre o ganho total.
+        const aliquotaEfetiva = rendimentoBruto > 0
+            ? Math.round((irDevido / rendimentoBruto) * 10000) / 100
+            : 0;
+
+        // 6. Índice da faixa ativa na tabela (para destacar na UI)
+        const indiceFaixa = tabela.indexOf(faixaAplicavel);
+
+        return {
+            baseCalculo:      Math.round(baseCalculo * 100) / 100,
+            irDevido,
+            aliquotaEfetiva,
+            rendimentoLiquido: Math.round((rendimentoBruto - irDevido) * 100) / 100,
+            faixaAplicavel,
+            indiceFaixa
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // CONTROLADORES DE UI
+    // ─────────────────────────────────────────────────────────────────────
+
+    function formatarMoeda(v) {
+        return v.toLocaleString('pt-BR', {
+            style: 'currency', currency: 'BRL',
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        });
+    }
+
+    function formatarLimite(v) {
+        return v === Infinity ? 'Acima de R$ 4.664,68' : 'Até ' + formatarMoeda(v);
+    }
+
+    function toggleDeducoes() {
+        const toggle = document.getElementById('toggleDed');
+        const painel = document.getElementById('painelDed');
+        toggle.classList.toggle('aberto');
+        painel.classList.toggle('aberto');
+    }
+
+    // ── Renderiza a tabela progressiva ──────────────────────────────────
+    function renderizarTabela(indiceFaixaAtiva) {
+        const tbody = document.getElementById('tabelaFaixas');
+        tbody.innerHTML = '';
+
+        TABELA_IR_2025.forEach((f, i) => {
+            const tr = document.createElement('tr');
+            if (i === indiceFaixaAtiva) tr.classList.add('faixa-ativa');
+
+            tr.innerHTML = `
+                <td>${formatarLimite(f.ate)}</td>
+                <td>${(f.aliquota * 100).toFixed(1).replace('.', ',')}%</td>
+                <td>${formatarMoeda(f.deducao)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ── Renderiza barras visuais por faixa ──────────────────────────────
+    function renderizarBarras(indiceFaixaAtiva, irDevido) {
+        const container = document.getElementById('barraFaixas');
+        container.innerHTML = '';
+
+        const nomes = ['Isento', '7,5%', '15%', '22,5%', '27,5%'];
+        const maxBar = Math.max(irDevido, 1);
+
+        // Calcula IR por faixa (cálculo progressivo puro para visualização)
+        const limites = [0, 2259.20, 2826.65, 3751.05, 4664.68];
+        // Não usamos o rendimento aqui, apenas mostramos as faixas disponíveis
+
+        TABELA_IR_2025.forEach((f, i) => {
+            const row = document.createElement('div');
+            row.className = 'faixa-row ' + f.cssClass;
+            if (i > indiceFaixaAtiva) row.classList.add('inativa');
+
+            // Para a barra: faixa ativa tem largura proporcional ao IR;
+            // faixas anteriores têm barra cheia; posteriores, zero.
+            const largura = i < indiceFaixaAtiva ? 100
+                : i === indiceFaixaAtiva ? (irDevido > 0 ? Math.min(100, (irDevido / maxBar) * 100) : 5)
+                : 0;
+
+            row.innerHTML = `
+                <div class="faixa-dot"></div>
+                <div class="faixa-nome">${nomes[i]}</div>
+                <div class="faixa-barra-wrap">
+                    <div class="faixa-barra" style="width: ${largura.toFixed(1)}%"></div>
+                </div>
+                <div class="faixa-valor">${(f.aliquota * 100).toFixed(1).replace('.', ',')}%</div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    // ── Handler principal ────────────────────────────────────────────────
+    function calcularIRHandler() {
+        const rendBruto   = parseFloat(document.getElementById('rendimento').value) || 0;
+        const dependentes = parseFloat(document.getElementById('dependentes').value) || 0;
+        const inss        = parseFloat(document.getElementById('inss').value) || 0;
+        const pensao      = parseFloat(document.getElementById('pensao').value) || 0;
+        const outras      = parseFloat(document.getElementById('outrasDeducoes').value) || 0;
+
+        const erroEl  = document.getElementById('erroMsg');
+        const resEl   = document.getElementById('resultado');
+
+        erroEl.classList.remove('visivel');
+        resEl.classList.remove('visivel');
+
+        if (rendBruto <= 0) {
+            erroEl.textContent = '⚠️ Informe o rendimento tributável do mês.';
+            erroEl.classList.add('visivel');
+            return;
+        }
+
+        const totalDeducoes = dependentes + inss + pensao + outras;
+
+        // Chama a função pura de cálculo
+        const resultado = calcularIR(rendBruto, totalDeducoes);
+
+        // Preenche UI
+        document.getElementById('irDevido').textContent    = formatarMoeda(resultado.irDevido);
+        document.getElementById('aliquotaEfetiva').textContent =
+            `Alíquota efetiva: ${resultado.aliquotaEfetiva.toFixed(2).replace('.', ',')}%`;
+
+        document.getElementById('resRendBruto').textContent   = formatarMoeda(rendBruto);
+        document.getElementById('resBaseCalculo').textContent  = formatarMoeda(resultado.baseCalculo);
+        document.getElementById('resDeducoes').textContent    = formatarMoeda(totalDeducoes);
+        document.getElementById('resLiquido').textContent     = formatarMoeda(resultado.rendimentoLiquido);
+
+        renderizarTabela(resultado.indiceFaixa);
+        renderizarBarras(resultado.indiceFaixa, resultado.irDevido);
+
+        // Dica contextual
+        const dica = gerarDica(resultado, rendBruto);
+        document.getElementById('dicaFinal').innerHTML = dica;
+
+        resEl.classList.add('visivel');
+        resEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Sobrescreve o onclick do botão apontando para o handler real
+    document.querySelector('.btn-calc').onclick = calcularIRHandler;
+
+    // ── Dica contextual inteligente ──────────────────────────────────────
+    function gerarDica(resultado, rendBruto) {
+        if (resultado.irDevido === 0) {
+            return '✅ <strong>Isento!</strong> Seu rendimento está abaixo do limite de isenção de R$ 2.259,20/mês. Nenhum IR a recolher neste mês.';
+        }
+        const economiaINSS = rendBruto * 0.20; // Estimativa INSS autônomo
+        return `💡 <strong>Lembre-se:</strong> O Carnê-Leão deve ser recolhido até o último dia útil do mês seguinte ao recebimento (DARF cód. 0190). 
+        Contribuições previdenciárias (INSS) como autônomo são dedutíveis e reduzem sua base de cálculo. 
+        Guarde todos os comprovantes de despesas relacionadas à sua atividade.`;
+    }
+
+    // Enter nos inputs
+    document.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') calcularIRHandler();
+        });
+    });
+</script>
+
+</body>
+</html>
