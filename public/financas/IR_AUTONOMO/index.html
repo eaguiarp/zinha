@@ -454,7 +454,7 @@
 
         <!-- Tabela progressiva com faixa ativa destacada -->
         <div class="tabela-wrap">
-            <h3>📋 Tabela progressiva mensal 2025</h3>
+            <h3>📋 Tabela progressiva mensal 2026</h3>
             <table>
                 <thead>
                     <tr>
@@ -544,7 +544,7 @@ const TABELA_IR_2026 = [
     //
     // @returns {Object} com todos os campos necessários para a UI
     // ─────────────────────────────────────────────────────────────────────
-    function calcularIR(rendimentoBruto, totalDeducoes = 0, tabela = TABELA_IR_2025) {
+    function calcularIR(rendimentoBruto, totalDeducoes = 0, tabela = TABELA_IR_2026) {
         // 1. Base de cálculo = rendimento − deduções
         //    Não pode ser negativa.
         const baseCalculo = Math.max(0, rendimentoBruto - totalDeducoes);
@@ -594,7 +594,7 @@ const TABELA_IR_2026 = [
     }
 
     function formatarLimite(v) {
-        return v === Infinity ? 'Acima de R$ 4.664,68' : 'Até ' + formatarMoeda(v);
+        return v === Infinity ? 'Acima de R$ 8.000,00' : 'Até ' + formatarMoeda(v);
     }
 
     function toggleDeducoes() {
@@ -609,7 +609,7 @@ const TABELA_IR_2026 = [
         const tbody = document.getElementById('tabelaFaixas');
         tbody.innerHTML = '';
 
-        TABELA_IR_2025.forEach((f, i) => {
+        TABELA_IR_2026.forEach((f, i) => {
             const tr = document.createElement('tr');
             if (i === indiceFaixaAtiva) tr.classList.add('faixa-ativa');
 
@@ -627,14 +627,14 @@ const TABELA_IR_2026 = [
         const container = document.getElementById('barraFaixas');
         container.innerHTML = '';
 
-        const nomes = ['Isento', '7,5%', '15%', '22,5%', '27,5%'];
+        const nomes = ['Isento', '15%', '22,5%', '27,5%'];
         const maxBar = Math.max(irDevido, 1);
 
         // Calcula IR por faixa (cálculo progressivo puro para visualização)
-        const limites = [0, 2259.20, 2826.65, 3751.05, 4664.68];
+        const limites = [0, 5000.00, 6500.00, 8000.00];
         // Não usamos o rendimento aqui, apenas mostramos as faixas disponíveis
 
-        TABELA_IR_2025.forEach((f, i) => {
+        TABELA_IR_2026.forEach((f, i) => {
             const row = document.createElement('div');
             row.className = 'faixa-row ' + f.cssClass;
             if (i > indiceFaixaAtiva) row.classList.add('inativa');
@@ -709,7 +709,7 @@ const TABELA_IR_2026 = [
     // ── Dica contextual inteligente ──────────────────────────────────────
     function gerarDica(resultado, rendBruto) {
         if (resultado.irDevido === 0) {
-            return '✅ <strong>Isento!</strong> Seu rendimento está abaixo do limite de isenção de R$ 2.259,20/mês. Nenhum IR a recolher neste mês.';
+            return '✅ <strong>Isento!</strong> Seu rendimento está abaixo do limite de isenção de R$ 5.000,00/mês. Nenhum IR a recolher neste mês.';
         }
         const economiaINSS = rendBruto * 0.20; // Estimativa INSS autônomo
         return `💡 <strong>Lembre-se:</strong> O Carnê-Leão deve ser recolhido até o último dia útil do mês seguinte ao recebimento (DARF cód. 0190). 
