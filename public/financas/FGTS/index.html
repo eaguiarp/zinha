@@ -192,7 +192,7 @@
         const multa = document.getElementById('rMulta').textContent;
         const total = document.getElementById('tTotal').textContent;
         const tipo  = document.getElementById('tipoDemissao');
-        const texto = `📋 Simulei meu FGTS na Zinha!\n\n💰 Saldo FGTS: ${saldo}\n⚖️ Multa Rescisória: ${multa}\n🏆 Total a receber: ${total}\n📄 Tipo: ${tipo.options[tipo.selectedIndex].text}\n\nSimule você também: https://zinha.com.br/financas/FGTS/`;
+        const texto = `📋 Simulei meu FGTS na Zinha!\n\n💰 Saldo FGTS: ${saldo}\n⚖️ Multa Rescisória: ${multa}\n🏆 Total a receber: ${total}\n📄 Tipo: ${tipo.options[tipo.selectedIndex].text}\n\nSimule você também: https://zinha.com.br/financas/fgts/`;
         if(navigator.share){ navigator.share({title:'Meu FGTS',text:texto}); }
         else { navigator.clipboard.writeText(texto).then(()=>alert('Resumo copiado! Cole onde desejar.')); }
     }

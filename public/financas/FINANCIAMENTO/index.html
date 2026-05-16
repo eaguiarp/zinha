@@ -256,7 +256,7 @@
     }
 
     function compartilharSimular(){
-        const t = `🏦 Simulei meu financiamento na Zinha!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: https://zinha.com.br/financas/FINANCIAMENTO/`;
+        const t = `🏦 Simulei meu financiamento na Zinha!\n\n💳 1ª Parcela: ${document.getElementById('s-rPrim').textContent}\n💸 Total de Juros: ${document.getElementById('s-rJuros').textContent}\n💰 Total a Pagar: ${document.getElementById('s-tTotal').textContent}\n\nSimule: https://zinha.com.br/financas/financiamento/`;
         navigator.share ? navigator.share({title:'Financiamento',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 
@@ -317,7 +317,7 @@
     }
 
     function compartilharDescobrir(){
-        const t = `🔍 Descobri a taxa do meu financiamento!\n\n📊 Taxa Mensal: ${document.getElementById('d-rTaxaMes').textContent}\n📈 Taxa Anual: ${document.getElementById('d-rTaxaAno').textContent}\n💸 Total de Juros: ${document.getElementById('d-rJuros').textContent}\n💰 Custo Total: ${document.getElementById('d-tTotal').textContent}\n\nDescubra a sua: https://zinha.com.br/financas/FINANCIAMENTO/`;
+        const t = `🔍 Descobri a taxa do meu financiamento!\n\n📊 Taxa Mensal: ${document.getElementById('d-rTaxaMes').textContent}\n📈 Taxa Anual: ${document.getElementById('d-rTaxaAno').textContent}\n💸 Total de Juros: ${document.getElementById('d-rJuros').textContent}\n💰 Custo Total: ${document.getElementById('d-tTotal').textContent}\n\nDescubra a sua: https://zinha.com.br/financas/financiamento/`;
         navigator.share ? navigator.share({title:'Minha Taxa',text:t}) : navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));
     }
 </script>
